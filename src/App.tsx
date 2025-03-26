@@ -20,7 +20,7 @@ function App() {
             path="/sign-in/*" 
             element={
               <div className="min-h-screen flex items-center justify-center">
-                <SignIn routing="path" path="/sign-in" />
+                <SignIn routing="path" />
               </div>
             } 
           />
