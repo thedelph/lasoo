@@ -24,8 +24,8 @@ export default function ResultsPane({
 
   return (
     <div className="fixed bottom-4 w-full px-4 max-w-lg mx-auto left-0 right-0 z-10">
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body p-4 max-h-[60vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl">
+        <div className="p-4 max-h-[60vh] overflow-y-auto">
           {selectedLocksmith ? (
             <LocksmithDetails locksmith={selectedLocksmith} onBack={onBack} />
           ) : availableLocksmiths.length > 0 ? (

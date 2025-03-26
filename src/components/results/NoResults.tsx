@@ -1,9 +1,9 @@
 export default function NoResults({ onReset }: { onReset: () => void }) {
   return (
     <div className="text-center py-6">
-      <div className="bg-base-200 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
         <svg
-          className="w-8 h-8 text-base-content/60"
+          className="w-8 h-8 text-gray-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -23,12 +23,12 @@ export default function NoResults({ onReset }: { onReset: () => void }) {
         </svg>
       </div>
       <h3 className="text-lg font-semibold mb-2">No Locksmiths Found</h3>
-      <p className="text-base-content/80 mb-4">
+      <p className="text-gray-600 mb-4">
         Sorry, we couldn't find any locksmiths that currently service your area. 
         Try searching a different postcode or changing the service type.
       </p>
       <button 
-        className="btn btn-primary" 
+        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" 
         onClick={onReset}
       >
         New Search

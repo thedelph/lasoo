@@ -25,7 +25,7 @@ export default function SearchForm({
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="fixed top-4 left-4 z-20 btn btn-circle lg:hidden"
+        className="fixed top-4 left-4 z-20 p-2 bg-white rounded-full shadow-md lg:hidden"
         aria-label={isExpanded ? 'Collapse search' : 'Expand search'}
       >
         {isExpanded ? (
@@ -41,51 +41,55 @@ export default function SearchForm({
           isExpanded ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="card bg-base-100 shadow-xl w-80 h-full lg:h-auto">
-          <div className="card-body">
+        <div className="bg-white rounded-lg shadow-xl w-80 h-full lg:h-auto">
+          <div className="p-5">
             {/* Close button for mobile */}
             <div className="flex justify-end lg:hidden -mt-2 -mr-2 mb-4">
               <button
                 onClick={() => setIsExpanded(false)}
-                className="btn btn-ghost btn-sm btn-circle"
+                className="p-1 text-gray-500 hover:text-gray-700 rounded-full"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Enter your Postcode</span>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Enter your Postcode
                 </label>
                 <input
                   type="text"
                   placeholder="e.g., SW1A 1AA"
                   value={postcode}
                   onChange={(e) => onPostcodeChange(e.target.value)}
-                  className="input input-bordered w-full"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Service Type</span>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Service Type
                 </label>
-                <div className="join w-full">
+                <div className="flex w-full">
                   <button
                     type="button"
-                    className={`join-item btn flex-1 ${
-                      service === 'home' ? 'btn-primary' : 'btn-ghost'
-                    }`}
+                    className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-l-md border ${
+                      service === 'home' 
+                        ? 'bg-blue-600 text-white border-blue-600' 
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    } flex-1`}
                     onClick={() => onServiceChange('home')}
                   >
                     <Home className="w-4 h-4 mr-2" /> Home
                   </button>
                   <button
                     type="button"
-                    className={`join-item btn flex-1 ${
-                      service === 'car' ? 'btn-primary' : 'btn-ghost'
-                    }`}
+                    className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-r-md border ${
+                      service === 'car' 
+                        ? 'bg-blue-600 text-white border-blue-600' 
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    } flex-1`}
                     onClick={() => onServiceChange('car')}
                   >
                     <Car className="w-4 h-4 mr-2" /> Vehicle
@@ -95,7 +99,9 @@ export default function SearchForm({
 
               <button
                 type="submit"
-                className={`btn btn-primary w-full ${searching ? 'loading' : ''}`}
+                className={`w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                  searching ? 'opacity-75' : ''
+                }`}
                 disabled={searching}
               >
                 {!searching && <Search className="w-4 h-4 mr-2" />}

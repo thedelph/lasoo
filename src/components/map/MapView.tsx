@@ -51,8 +51,8 @@ export default function MapView({
 
   if (!mapboxToken) {
     return (
-      <div className="flex items-center justify-center h-full bg-base-200">
-        <div className="alert alert-error max-w-md">
+      <div className="flex items-center justify-center h-full bg-gray-100">
+        <div className="p-4 bg-red-100 border border-red-300 rounded-lg text-red-700 flex items-center gap-2 max-w-md">
           <AlertCircle className="h-5 w-5" />
           <span>Map configuration error: Missing access token</span>
         </div>
@@ -76,7 +76,7 @@ export default function MapView({
       >
         {error && (
           <div className="absolute top-0 left-0 right-0 z-50">
-            <div className="alert alert-error max-w-md mx-auto mt-4">
+            <div className="p-4 bg-red-100 border border-red-300 rounded-lg text-red-700 flex items-center gap-2 max-w-md mx-auto mt-4">
               <AlertCircle className="h-5 w-5" />
               <span>{error}</span>
             </div>
@@ -91,7 +91,7 @@ export default function MapView({
             anchor="bottom"
           >
             <div className="animate-bounce">
-              <MapPin className="h-8 w-8 text-primary stroke-2" />
+              <MapPin className="h-8 w-8 text-blue-600 stroke-2" />
             </div>
           </Marker>
         )}
@@ -112,7 +112,7 @@ export default function MapView({
               anchor="bottom"
             >
               <button 
-                className="btn btn-circle btn-sm bg-primary text-primary-content hover:bg-primary-focus"
+                className="w-6 h-6 rounded-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center text-sm font-medium shadow-md"
                 onClick={() => onMarkerClick(locksmith)}
               >
                 {index + 1}
