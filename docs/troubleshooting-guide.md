@@ -148,6 +148,65 @@ const token = await getToken({
 });
 ```
 
+## Deployment Issues
+
+### 404 Errors on Vercel Deployment
+
+**Error Message:**
+```
+NOT_FOUND
+The requested resource was not found. This is a deployment error.
+```
+
+**Cause:**
+When deploying a single-page application (SPA) to Vercel, direct requests to routes like `/sign-in/factor-one` result in 404 errors because Vercel is looking for actual files at those paths.
+
+**Solutions:**
+1. Ensure your `vercel.json` file is correctly configured:
+   ```json
+   {
+     "rewrites": [
+       { "source": "/(.*)", "destination": "/index.html" }
+     ]
+   }
+   ```
+2. Verify that the `vercel.json` file is included in your Git repository and not in `.gitignore`
+3. Remove any conflicting deployment configurations (e.g., `netlify.toml` or `_redirects` files)
+4. Check Vercel deployment logs for any build or configuration errors
+
+### Clerk Authentication Route Issues
+
+**Error Message:**
+```
+404 error when accessing /sign-in/factor-one
+```
+
+**Cause:**
+Clerk's authentication flow uses specific routes like `/sign-in/factor-one` for multi-factor authentication, which need to be properly handled in the deployment configuration.
+
+**Solutions:**
+1. Ensure the Clerk `SignIn` component has the correct props:
+   ```tsx
+   <SignIn routing="path" path="/sign-in" />
+   ```
+2. Configure Vercel to handle all routes with the rewrite rule in `vercel.json`
+3. Test the authentication flow locally before deploying to production
+
+### Environment Variable Issues
+
+**Error Message:**
+```
+Clerk: Missing publishable key
+```
+
+**Cause:**
+Environment variables are not properly set in the Vercel deployment.
+
+**Solutions:**
+1. Verify that all required environment variables are set in your Vercel project settings
+2. Check that the variable names match what your application expects
+3. Ensure that the environment variables are accessible during build time if needed
+
 ## Security Best Practices
 
 1. **Least Privilege:** Only grant the minimum permissions necessary in RLS policies
