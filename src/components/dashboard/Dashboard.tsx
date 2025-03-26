@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Home } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -7,6 +7,7 @@ import { useUser, useAuth } from "@clerk/clerk-react";
 import DashboardTabs from "./DashboardTabs";
 import { useProfile } from "../../hooks/useProfile";
 import LoadingSpinner from "../LoadingSpinner";
+import { supabase, testConnection, debugAuth } from "../../utils/supabase";
 
 // Auth Debug Component
 function AuthDebugger() {

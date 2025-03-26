@@ -4,6 +4,15 @@ import { supabase, createSupabaseWithAuth } from '../lib/supabase/client';
 import { toast } from 'sonner';
 import type { Profile } from '../types/profile';
 
+// Define a type for the user object based on what we're using
+interface ClerkUser {
+  id: string;
+  publicMetadata: {
+    company_name?: string | null;
+    [key: string]: any;
+  };
+}
+
 export function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +23,7 @@ export function useProfile() {
 
   const setupAuth = async () => {
     if (!isSignedIn || !user) {
-      console.log('No authenticated user:', { isSignedIn, userId: user?.id });
+      console.log('No authenticated user:', { isSignedIn, userId: (user as ClerkUser | null)?.id });
       throw new Error('No authenticated user');
     }
     
@@ -59,11 +68,12 @@ export function useProfile() {
     try {
       await setupAuth();
       
-      console.log('Fetching profile for user:', user.id);
+      const clerkUser = user as ClerkUser;
+      console.log('Fetching profile for user:', clerkUser.id);
       const { data: existingProfile, error: fetchError } = await supabaseClient
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', clerkUser.id)
         .single();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
@@ -74,8 +84,8 @@ export function useProfile() {
       if (!existingProfile) {
         console.log('Creating new profile...');
         const newProfileData = {
-          id: user.id,
-          company_name: user.publicMetadata.company_name || null,
+          id: clerkUser.id,
+          company_name: clerkUser.publicMetadata?.company_name || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           country: 'United Kingdom',
@@ -120,6 +130,7 @@ export function useProfile() {
 
     try {
       await setupAuth();
+      const clerkUser = user as ClerkUser;
 
       console.log('Updating profile:', updates);
       const { data: updatedProfile, error: updateError } = await supabaseClient
@@ -128,7 +139,7 @@ export function useProfile() {
           ...updates,
           updated_at: new Date().toISOString()
         })
-        .eq('id', user.id)
+        .eq('id', clerkUser.id)
         .select()
         .single();
 
@@ -152,7 +163,7 @@ export function useProfile() {
   };
 
   useEffect(() => {
-    console.log('useEffect triggered with:', { isSignedIn, userId: user?.id });
+    console.log('useEffect triggered with:', { isSignedIn, userId: (user as ClerkUser | null)?.id });
     loadProfile();
   }, [user, isSignedIn]);
 

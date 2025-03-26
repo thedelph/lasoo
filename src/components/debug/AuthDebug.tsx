@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
-import { supabase, debugAuth, testConnection } from '../utils/supabase';
+import { supabase, debugAuth, testConnection } from '../../utils/supabase';
 
 export function AuthDebugger() {
   const { user } = useUser();
