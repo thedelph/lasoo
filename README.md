@@ -11,7 +11,7 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
 - **Frontend**: React with TypeScript, built using Vite
 - **Authentication**: Clerk
 - **Database**: Supabase
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS with custom UI components
 - **Mapping**: Mapbox GL
 - **Deployment**: Vercel
 
@@ -42,6 +42,7 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
    VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_MAPBOX_ACCESS_TOKEN=your_mapbox_access_token
    ```
 
 4. Start the development server:
@@ -49,12 +50,22 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
    npm run dev
    ```
 
+## Recent Updates
+
+- **Dashboard UI Enhancement**: Completely redesigned the locksmith dashboard with a modern, card-based layout and improved user experience
+- **Navigation Improvements**: Fixed header and footer navigation links to properly scroll to page sections
+- **UI Consistency**: Enhanced visual consistency throughout the application with a standardized color system
+- **Performance Optimization**: Removed dark mode feature to simplify the UI and improve performance
+- **Branding Update**: Updated page title to "Lasoo" for consistent branding
+
 ## Deployment
 
 The application is configured for deployment on Vercel. See the [Deployment Guide](./docs/deployment-guide.md) for detailed instructions.
 
 ## Documentation
 
+- [Dashboard UI Guide](./docs/dashboard-ui-guide.md)
+- [UI Navigation Guide](./docs/ui-navigation-guide.md)
 - [Supabase-Clerk Integration](./docs/supabase-clerk-integration.md)
 - [Troubleshooting Guide](./docs/troubleshooting-guide.md)
 - [Deployment Guide](./docs/deployment-guide.md)
@@ -67,6 +78,10 @@ lasoo/
 ├── public/               # Static assets
 ├── src/
 │   ├── components/       # React components
+│   │   ├── dashboard/    # Dashboard components
+│   │   │   └── tabs/     # Dashboard tab components
+│   │   ├── landing/      # Landing page components
+│   │   └── results/      # Search results components
 │   ├── hooks/            # Custom React hooks
 │   ├── lib/              # Utility functions and libraries
 │   ├── App.tsx           # Main application component
@@ -81,8 +96,11 @@ lasoo/
 - User authentication with Clerk
 - Integration with Supabase for data storage
 - Row Level Security (RLS) policies for data privacy
-- Profile management
+- Locksmith profile management with intuitive dashboard
+- Service area configuration with Mapbox integration
+- Working hours and services management
 - Responsive design with Tailwind CSS
+- Smooth section navigation on landing page
 
 ## Contributing
 

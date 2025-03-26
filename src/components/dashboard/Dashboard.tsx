@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Home } from "lucide-react";
+import { LogOut, Home, User, Bell, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useUser, useAuth } from "@clerk/clerk-react";
@@ -74,9 +74,9 @@ function AuthDebugger() {
   if (!debugInfo) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 p-4 bg-black/80 text-white rounded-lg max-w-lg overflow-auto">
-      <h3 className="font-bold mb-2">Auth Debug</h3>
-      <pre className="text-xs whitespace-pre-wrap">
+    <div className="fixed bottom-4 right-4 max-w-lg overflow-auto rounded-lg bg-black/80 p-4 text-white">
+      <h3 className="mb-2 font-bold">Auth Debug</h3>
+      <pre className="whitespace-pre-wrap text-xs">
         {JSON.stringify(debugInfo, null, 2)}
       </pre>
     </div>
@@ -113,7 +113,11 @@ export default function Dashboard() {
   };
 
   if (profileLoading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   if (!isSignedIn || !user) {
@@ -121,29 +125,72 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Locksmith Dashboard</h1>
-          <p className="text-base-content/60">
-            {profile?.company_name || 'Complete your profile'}
-          </p>
+    <div className="min-h-screen bg-slate-50">
+      {/* Top Navigation Bar */}
+      <header className="sticky top-0 z-10 border-b bg-white shadow-sm">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white">
+                L
+              </div>
+              <span className="text-lg font-semibold">Lasoo</span>
+            </Link>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button className="rounded-full p-2 text-slate-500 hover:bg-slate-100">
+              <Bell size={20} />
+            </button>
+            <button className="rounded-full p-2 text-slate-500 hover:bg-slate-100">
+              <Settings size={20} />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                <User size={18} />
+              </div>
+              <div className="hidden md:block">
+                <div className="text-sm font-medium">{user.fullName || user.firstName || 'User'}</div>
+                <div className="text-xs text-slate-500">{profile?.company_name || 'Complete your profile'}</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Link to="/" className="btn btn-outline">
-            <Home className="w-4 h-4 mr-2" />
-            Home
-          </Link>
-          <button 
-            className="btn btn-outline" 
-            onClick={handleLogout}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </button>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Dashboard Header */}
+        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Locksmith Dashboard</h1>
+            <p className="mt-1 text-slate-500">
+              Manage your locksmith business details and services
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link 
+              to="/" 
+              className="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-300 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              <Home className="mr-2 h-4 w-4" />
+              Home
+            </Link>
+            <button 
+              className="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-300 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="rounded-xl bg-white p-1 shadow-sm ring-1 ring-slate-200">
+          <DashboardTabs />
         </div>
       </div>
-      <DashboardTabs />
+      
       <AuthDebugger />
     </div>
   );

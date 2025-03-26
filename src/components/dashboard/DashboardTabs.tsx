@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MapPin, Clock, Briefcase, Building } from "lucide-react";
 import CompanyDetailsTab from "./tabs/CompanyDetailsTab";
 import ServiceAreaTab from "./tabs/ServiceAreaTab";
 import WorkingHoursTab from "./tabs/WorkingHoursTab";
@@ -7,42 +8,58 @@ import ServicesAndPricesTab from "./tabs/ServicesAndPricesTab";
 export default function DashboardTabs() {
   const [activeTab, setActiveTab] = useState("company");
 
+  const tabs = [
+    {
+      id: "company",
+      label: "Company Details",
+      icon: <Building className="h-4 w-4" />,
+      component: <CompanyDetailsTab />
+    },
+    {
+      id: "service",
+      label: "Service Area",
+      icon: <MapPin className="h-4 w-4" />,
+      component: <ServiceAreaTab />
+    },
+    {
+      id: "hours",
+      label: "Working Hours",
+      icon: <Clock className="h-4 w-4" />,
+      component: <WorkingHoursTab />
+    },
+    {
+      id: "prices",
+      label: "Services & Prices",
+      icon: <Briefcase className="h-4 w-4" />,
+      component: <ServicesAndPricesTab />
+    }
+  ];
+
   return (
     <div className="w-full">
-      <div className="tabs tabs-boxed justify-center mb-6">
-        <button
-          className={`tab ${activeTab === "company" ? "tab-active" : ""}`}
-          onClick={() => setActiveTab("company")}
-        >
-          Company Details
-        </button>
-        <button
-          className={`tab ${activeTab === "service" ? "tab-active" : ""}`}
-          onClick={() => setActiveTab("service")}
-        >
-          Service Area
-        </button>
-        <button
-          className={`tab ${activeTab === "hours" ? "tab-active" : ""}`}
-          onClick={() => setActiveTab("hours")}
-        >
-          Working Hours
-        </button>
-        <button
-          className={`tab ${activeTab === "prices" ? "tab-active" : ""}`}
-          onClick={() => setActiveTab("prices")}
-        >
-          Services & Prices
-        </button>
+      {/* Tab Navigation */}
+      <div className="mb-6 border-b">
+        <div className="flex flex-wrap">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body">
-          {activeTab === "company" && <CompanyDetailsTab />}
-          {activeTab === "service" && <ServiceAreaTab />}
-          {activeTab === "hours" && <WorkingHoursTab />}
-          {activeTab === "prices" && <ServicesAndPricesTab />}
-        </div>
+      {/* Tab Content */}
+      <div className="p-6">
+        {tabs.find(tab => tab.id === activeTab)?.component}
       </div>
     </div>
   );

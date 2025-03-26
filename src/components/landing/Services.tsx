@@ -81,7 +81,7 @@ export default function Services() {
   }
 
   return (
-    <section id="services" className="bg-slate-50 py-24 dark:bg-slate-900">
+    <section id="services" className="bg-slate-50 py-24">
       <div className="container mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -90,8 +90,8 @@ export default function Services() {
           transition={{ duration: 0.7 }}
           className="mb-16 text-center"
         >
-          <h2 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Our Services</h2>
-          <p className="mx-auto max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+          <h2 className="mb-4 text-4xl font-bold tracking-tight text-slate-900">Our Services</h2>
+          <p className="mx-auto max-w-2xl text-lg text-slate-600">
             Our network of professional locksmiths offers a comprehensive range of 
             security services for homes, businesses, and vehicles.
           </p>
@@ -106,15 +106,15 @@ export default function Services() {
         >
           {services.map((service, index) => (
             <motion.div key={index} variants={itemVariants}>
-              <Card className="h-full border border-slate-200 bg-white transition-all duration-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
+              <Card className="h-full border border-slate-200 bg-white transition-all duration-300 hover:shadow-lg">
                 <CardContent className="p-6">
                   <div className="mb-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                       <service.icon className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{service.title}</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{service.subtitle}</p>
+                      <h3 className="text-xl font-semibold text-slate-900">{service.title}</h3>
+                      <p className="text-sm text-slate-500">{service.subtitle}</p>
                     </div>
                   </div>
                   
@@ -122,7 +122,7 @@ export default function Services() {
                     {service.items.map((item, itemIndex) => (
                       <div key={itemIndex} className="flex items-center gap-2">
                         <Key className="h-3 w-3 text-primary" />
-                        <span className="text-sm text-slate-700 dark:text-slate-300">{item}</span>
+                        <span className="text-sm text-slate-700">{item}</span>
                       </div>
                     ))}
                   </div>
@@ -139,7 +139,7 @@ export default function Services() {
           transition={{ duration: 0.7, delay: 0.6 }}
           className="mt-16 text-center"
         >
-          <p className="mb-4 text-slate-600 dark:text-slate-300">Need a service not listed here?</p>
+          <p className="mb-4 text-slate-600">Need a service not listed here?</p>
           <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
             Contact Us for Custom Solutions
           </Button>

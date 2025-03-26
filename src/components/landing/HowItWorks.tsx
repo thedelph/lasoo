@@ -55,7 +55,7 @@ export default function HowItWorks() {
   }
 
   return (
-    <section id="how-it-works" className="relative bg-slate-50 py-24 dark:bg-slate-900">
+    <section id="how-it-works" className="relative bg-slate-50 py-24">
       {/* Decorative elements */}
       <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
 
@@ -72,8 +72,8 @@ export default function HowItWorks() {
           transition={{ duration: 0.7 }}
           className="mb-16 text-center"
         >
-          <h2 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 dark:text-white">How It Works</h2>
-          <p className="mx-auto max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+          <h2 className="mb-4 text-4xl font-bold tracking-tight text-slate-900">How It Works</h2>
+          <p className="mx-auto max-w-2xl text-lg text-slate-600">
             Finding a reliable locksmith has never been easier. Follow these simple steps to get the help you need.
           </p>
         </motion.div>
@@ -90,8 +90,8 @@ export default function HowItWorks() {
               <motion.div key={index} className="relative" variants={itemVariants}>
                 {/* Connection lines with arrows */}
                 {index < steps.length - 1 && (
-                  <div className="absolute left-[calc(50%+20px)] top-[28px] hidden h-[2px] w-[calc(100%-40px)] bg-slate-200 lg:block dark:bg-slate-700">
-                    <div className="absolute -right-1 top-1/2 -translate-y-1/2 text-primary">
+                  <div className="absolute left-[calc(50%+20px)] top-[28px] hidden h-[2px] w-[calc(100%-40px)] bg-primary/30 lg:block">
+                    <div className="absolute -right-1 top-1/2 -translate-y-1/2 text-primary/30">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8 0L6.59 1.41L12.17 7H0V9H12.17L6.59 14.59L8 16L16 8L8 0Z" fill="currentColor" />
                       </svg>
@@ -105,21 +105,21 @@ export default function HowItWorks() {
                   >
                     <step.icon className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="mb-3 text-xl font-bold text-slate-900 dark:text-white">{step.title}</h3>
-                  <p className="text-slate-600 dark:text-slate-300">{step.description}</p>
+                  <h3 className="mb-3 text-xl font-bold text-slate-900">{step.title}</h3>
+                  <p className="text-slate-600">{step.description}</p>
                 </div>
 
                 {/* Vertical connection for mobile and tablet */}
                 {index < steps.length - 1 && (
                   <div className="absolute -bottom-10 left-1/2 flex -translate-x-1/2 flex-col items-center lg:hidden">
-                    <div className="h-6 w-[2px] bg-slate-200 dark:bg-slate-700"></div>
+                    <div className="h-6 w-[2px] bg-primary/30"></div>
                     <svg
                       width="16"
                       height="16"
                       viewBox="0 0 16 16"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      className="rotate-90 text-primary"
+                      className="rotate-90 text-primary/30"
                     >
                       <path d="M8 0L6.59 1.41L12.17 7H0V9H12.17L6.59 14.59L8 16L16 8L8 0Z" fill="currentColor" />
                     </svg>
@@ -148,4 +148,3 @@ export default function HowItWorks() {
     </section>
   )
 }
-

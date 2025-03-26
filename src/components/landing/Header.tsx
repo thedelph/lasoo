@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
-import ThemeToggle from "../../components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -45,13 +44,13 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden items-center gap-1 md:flex">
             {navItems.map((item, index) => (
-              <Link 
+              <a 
                 key={index} 
-                to={item.href} 
+                href={item.href} 
                 className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
               >
                 {item.label}
-              </Link>
+              </a>
             ))}
           </nav>
 
@@ -74,8 +73,6 @@ export default function Header() {
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
             
-            <ThemeToggle />
-            
             {/* Mobile menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -86,14 +83,14 @@ export default function Header() {
               <SheetContent side="right" className="w-[250px] sm:w-[300px]">
                 <nav className="flex flex-col space-y-4 pt-6">
                   {navItems.map((item, index) => (
-                    <Link 
+                    <a 
                       key={index} 
-                      to={item.href} 
+                      href={item.href} 
                       className="rounded-md px-3 py-2 text-base font-medium hover:bg-muted"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}
-                    </Link>
+                    </a>
                   ))}
                   <div className="pt-4">
                     <SignedOut>

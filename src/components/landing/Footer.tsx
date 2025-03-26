@@ -156,28 +156,28 @@ export default function Footer() {
             <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-white">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link
+                <a
                   className="inline-block text-slate-400 transition-colors hover:text-primary hover:underline"
-                  to="#features"
+                  href="#features"
                 >
                   Features
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
+                <a
                   className="inline-block text-slate-400 transition-colors hover:text-primary hover:underline"
-                  to="#how-it-works"
+                  href="#how-it-works"
                 >
                   How It Works
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
+                <a
                   className="inline-block text-slate-400 transition-colors hover:text-primary hover:underline"
-                  to="#services"
+                  href="#services"
                 >
                   Services
-                </Link>
+                </a>
               </li>
               <li>
                 <Link
@@ -188,12 +188,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link
+                <a
                   className="inline-block text-slate-400 transition-colors hover:text-primary hover:underline"
-                  to="#contact"
+                  href="#contact"
                 >
                   Contact Us
-                </Link>
+                </a>
               </li>
             </ul>
           </motion.div>
@@ -203,44 +203,44 @@ export default function Footer() {
             <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-white">Services</h3>
             <ul className="space-y-2">
               <li>
-                <Link
+                <a
                   className="inline-block text-slate-400 transition-colors hover:text-primary hover:underline"
-                  to="#services"
+                  href="#services"
                 >
                   Residential Services
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
+                <a
                   className="inline-block text-slate-400 transition-colors hover:text-primary hover:underline"
-                  to="#services"
+                  href="#services"
                 >
                   Automotive Services
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
+                <a
                   className="inline-block text-slate-400 transition-colors hover:text-primary hover:underline"
-                  to="#services"
+                  href="#services"
                 >
                   Commercial Services
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
+                <a
                   className="inline-block text-slate-400 transition-colors hover:text-primary hover:underline"
-                  to="#services"
+                  href="#services"
                 >
                   Security Upgrades
-                </Link>
+                </a>
               </li>
               <li>
-                <Link
+                <a
                   className="inline-block text-slate-400 transition-colors hover:text-primary hover:underline"
-                  to="#services"
+                  href="#services"
                 >
                   Emergency Lockouts
-                </Link>
+                </a>
               </li>
             </ul>
           </motion.div>
@@ -284,18 +284,18 @@ export default function Footer() {
         >
           <p className="mb-4 text-slate-500 md:mb-0">&copy; 2025 Lasoo. All rights reserved.</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link className="text-sm text-slate-500 hover:text-primary hover:underline" to="#">
+            <a className="text-sm text-slate-500 hover:text-primary hover:underline" href="#features">
               Terms of Service
-            </Link>
-            <Link className="text-sm text-slate-500 hover:text-primary hover:underline" to="#">
+            </a>
+            <a className="text-sm text-slate-500 hover:text-primary hover:underline" href="#how-it-works">
               Privacy Policy
-            </Link>
-            <Link className="text-sm text-slate-500 hover:text-primary hover:underline" to="#">
+            </a>
+            <a className="text-sm text-slate-500 hover:text-primary hover:underline" href="#services">
               Cookie Policy
-            </Link>
-            <Link className="text-sm text-slate-500 hover:text-primary hover:underline" to="#">
+            </a>
+            <a className="text-sm text-slate-500 hover:text-primary hover:underline" href="#contact">
               Accessibility
-            </Link>
+            </a>
           </div>
         </motion.div>
       </div>

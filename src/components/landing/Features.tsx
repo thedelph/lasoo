@@ -63,7 +63,7 @@ export default function Features() {
   }
 
   return (
-    <section id="features" className="relative bg-white py-24 dark:bg-slate-950">
+    <section id="features" className="relative bg-white py-24">
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -left-40 top-20 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl"></div>
@@ -78,8 +78,8 @@ export default function Features() {
           transition={{ duration: 0.7 }}
           className="mb-16 text-center"
         >
-          <h2 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Why Choose Us</h2>
-          <p className="mx-auto max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+          <h2 className="mb-4 text-4xl font-bold tracking-tight text-slate-900">Why Choose Us</h2>
+          <p className="mx-auto max-w-2xl text-lg text-slate-600">
             We connect you with the most reliable locksmith professionals in your area, ensuring quality service when
             you need it most.
           </p>
@@ -94,15 +94,15 @@ export default function Features() {
         >
           {features.map((feature, index) => (
             <motion.div key={index} variants={itemVariants}>
-              <Card className="h-full border border-slate-200 bg-white transition-all duration-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
+              <Card className="h-full border border-slate-200 bg-white transition-all duration-300 hover:shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex gap-5">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                       <feature.icon className="h-7 w-7 text-primary" />
                     </div>
                     <div>
-                      <h3 className="mb-2.5 text-xl font-semibold text-slate-900 dark:text-white">{feature.title}</h3>
-                      <p className="text-slate-600 dark:text-slate-300">{feature.description}</p>
+                      <h3 className="mb-2.5 text-xl font-semibold text-slate-900">{feature.title}</h3>
+                      <p className="text-slate-600">{feature.description}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -114,4 +114,3 @@ export default function Features() {
     </section>
   )
 }
-
