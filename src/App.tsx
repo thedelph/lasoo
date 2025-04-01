@@ -6,6 +6,14 @@ import FindPage from './components/FindPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import LocksmithDashboard from './components/locksmith/Dashboard';
 import AttributeCleaner from './components/AttributeCleaner';
+import AdminLogin from './components/admin/AdminLogin';
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
+import AdminDashboard from './components/admin/AdminDashboard';
+import DashboardOverview from './components/admin/DashboardOverview';
+import GodModeMap from './components/admin/GodModeMap';
+import SubscriptionManagement from './components/admin/SubscriptionManagement';
+import UserManagement from './components/admin/UserManagement';
+import TradespeopleManagement from './components/admin/TradespeopleManagement';
 
 function App() {
   return (
@@ -38,6 +46,21 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={
+          <AdminProtectedRoute>
+            <AdminDashboard />
+          </AdminProtectedRoute>
+        }>
+          <Route index element={<DashboardOverview />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="tradespeople" element={<TradespeopleManagement />} />
+          <Route path="map" element={<GodModeMap />} />
+          <Route path="subscriptions" element={<SubscriptionManagement />} />
+          {/* Add more admin routes as needed */}
+        </Route>
       </Routes>
       <AttributeCleaner />
     </Router>

@@ -10,9 +10,9 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-    detectSessionInUrl: false
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
   },
   global: {
     headers: {
@@ -25,9 +25,9 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
 export const createSupabaseWithAuth = (authToken: string) => {
   return createClient<Database>(supabaseUrl, supabaseKey, {
     auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
     },
     global: {
       headers: {
