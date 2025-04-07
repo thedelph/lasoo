@@ -52,6 +52,8 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
 
 ## Recent Updates
 
+- **Admin Panel Routing Fix**: Updated admin dashboard route to use wildcard pattern (`/admin/dashboard/*`) for proper nested route handling in production
+- **Build Optimization**: Fixed TypeScript errors to ensure successful production builds
 - **Dashboard UI Enhancement**: Completely redesigned the locksmith dashboard with a modern, card-based layout and improved user experience
 - **Navigation Improvements**: Fixed header and footer navigation links to properly scroll to page sections
 - **UI Consistency**: Enhanced visual consistency throughout the application with a standardized color system
@@ -101,6 +103,8 @@ lasoo/
 - Working hours and services management
 - Responsive design with Tailwind CSS
 - Smooth section navigation on landing page
+- Admin panel with dashboard, user management, and analytics
+- God Mode Map for administrators to view all service providers
 
 ## Contributing
 

@@ -29,6 +29,16 @@ The admin backend has been implemented with the following components:
 2. Use admin credentials (email: chrishide87@gmail.com)
 3. After login, you'll be redirected to the admin dashboard at `/admin/dashboard`
 
+### Production Deployment Notes
+
+The admin panel routes are configured to work in both development and production environments:
+
+- The admin dashboard uses a wildcard route pattern (`/admin/dashboard/*`) to properly handle nested routes
+- All client-side routes are handled by the `vercel.json` configuration which redirects all requests to the SPA entry point
+- If you encounter routing issues in production, ensure that:
+  - The wildcard pattern is correctly set in `App.tsx`
+  - The `vercel.json` file contains the proper rewrite rule: `{ "source": "/(.*)", "destination": "/index.html" }`
+
 ## Technical Stack
 
 - Frontend: React with TypeScript
