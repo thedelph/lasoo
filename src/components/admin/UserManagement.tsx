@@ -51,8 +51,8 @@ const UserManagement = () => {
             created_at: user.created_at,
             last_sign_in_at: user.last_sign_in_at,
             is_tradesperson: profile?.is_tradesperson || false,
-            full_name: profile?.full_name || null,
-            phone: profile?.phone || null
+            full_name: user.fullname || null, // Use fullname from users table instead of profile
+            phone: user.phone || profile?.phone || null // First try user.phone, then fall back to profile.phone
           };
         });
         
