@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useProfile } from '../../../hooks/useProfile';
-import { Loader2, Building, Phone, Globe, MapPin, Mail } from 'lucide-react';
+import { Loader2, Building, Phone, Globe, MapPin } from 'lucide-react';
 import type { Profile } from '../../../types/profile';
 
 export default function CompanyDetailsTab() {

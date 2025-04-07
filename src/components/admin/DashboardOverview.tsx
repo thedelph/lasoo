@@ -57,7 +57,6 @@ const DashboardOverview = () => {
       // Get new users today
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const todayISOString = today.toISOString();
       
       const newUsersToday = allUsers.filter(user => {
         const createdAt = new Date(user.created_at);
