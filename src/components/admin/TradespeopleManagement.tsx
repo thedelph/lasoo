@@ -122,7 +122,7 @@ const TradespeopleManagement = () => {
       const { error } = await supabase
         .from('users')
         .update({
-          is_authorized: true
+          is_authorized: 1
         })
         .eq('id', tradespersonId);
       
@@ -139,10 +139,11 @@ const TradespeopleManagement = () => {
   const handleActivateTradesperson = async (tradespersonId: string) => {
     try {
       // Update the tradesperson's activation status
+      // Using 1 instead of true since is_activated is a smallint in the database
       const { error } = await supabase
         .from('users')
         .update({
-          is_activated: true
+          is_activated: 1
         })
         .eq('id', tradespersonId);
       
