@@ -2,11 +2,11 @@
 
 ## 1. Executive Summary
 
-This document outlines the architecture and design for an administrative backend system for the tradesperson location application. The admin backend will provide comprehensive monitoring, management, and analytics capabilities to effectively oversee both customers and tradespeople (currently locksmiths) using the platform.
+This document outlines the architecture and design for an administrative backend system for the tradesperson location application. The admin backend will provide comprehensive monitoring, management, and analytics capabilities to effectively oversee tradespeople (currently locksmiths) using the platform. Regular users/customers do not need accounts in the system.
 
 ## 2. System Overview
 
-The admin backend will be a secure, web-based interface accessible only to authorized administrators. It will connect to the existing database and provide an intuitive interface for monitoring user activity, managing subscriptions, viewing real-time tradesperson locations, and extracting key performance metrics.
+The admin backend will be a secure, web-based interface accessible only to authorized administrators. It will connect to the existing database and provide an intuitive interface for managing tradespeople accounts, monitoring subscriptions, viewing real-time tradesperson locations, and extracting key performance metrics.
 
 ## 3. Core Features
 
@@ -20,22 +20,15 @@ The admin backend will be a secure, web-based interface accessible only to autho
 ### 3.2 Dashboard & Analytics
 
 - Real-time overview of platform metrics
-  - Total registered users (customers)
   - Total registered tradespeople
   - New sign-ups (daily, weekly, monthly)
-  - Active users & tradespeople
+  - Active tradespeople
   - Subscription revenue metrics
 - Visual reports with charts and graphs
 - Exportable data in various formats (CSV, PDF)
 - Custom date range filtering
 
-### 3.3 User Management
 
-- Comprehensive user database view
-- Search and filter capabilities
-- Ability to view, edit, and manage user accounts
-- Option to manually verify tradespeople
-- User activity logs and history
 
 ### 3.4 Tradesperson Management
 
@@ -154,10 +147,7 @@ To further refine this architecture, the following information would be helpful:
 - ✅ Implemented real-time statistics for users, tradespeople, and subscriptions
 - ✅ Added visual cards for important metrics display
 
-#### User Management
-- ✅ Created comprehensive user management interface
-- ✅ Implemented search and filtering capabilities
-- ✅ Added user verification and management actions
+
 
 #### Tradesperson Management
 - ✅ Built dedicated tradesperson management interface

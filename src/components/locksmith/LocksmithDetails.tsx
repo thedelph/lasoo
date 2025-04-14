@@ -1,11 +1,36 @@
-import { Phone, Globe, Home, Car, ArrowLeft, Clock, MapPin } from 'lucide-react'
+/**
+ * @file LocksmithDetails.tsx
+ * @description Component that displays detailed information about a locksmith/tradesperson
+ * shown when a user clicks on a map marker or search result
+ */
+
+import { Phone, Globe, Home, Car, ArrowLeft, Clock, MapPin, Navigation } from 'lucide-react'
 import type { Locksmith } from '../../types/locksmith'
 
+/**
+ * Props for the LocksmithDetails component
+ */
 interface LocksmithDetailsProps {
+  /** The locksmith/tradesperson to display details for */
   locksmith: Locksmith
+  /** Callback function for the back button */
   onBack: () => void
 }
 
+/**
+ * Component that displays detailed information about a selected locksmith/tradesperson
+ * Including contact information, distance from search location, and services offered.
+ * 
+ * Key features:
+ * - Distance from search location to HQ (measured from company postcode location)
+ * - ETA based on that distance
+ * - Contact options (phone call)
+ * - Services offered
+ * - Service radius/coverage area
+ * 
+ * @param props - Component props (see LocksmithDetailsProps)
+ * @returns React component
+ */
 export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetailsProps) {
   return (
     <div className="space-y-6">
@@ -23,12 +48,32 @@ export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetails
         <h2 className="text-2xl font-bold mb-2">
           {locksmith.companyName}
         </h2>
-        {locksmith.eta !== undefined && (
+        <div className="flex flex-col gap-1">
+          {/* 
+            Distance from search location to HQ
+            This shows how far the tradesperson's HQ (company postcode location) is from
+            the postcode the user searched for - this is what determines if they're in range
+          */}
           <div className="flex items-center text-gray-500">
-            <Clock className="w-4 h-4 mr-1" />
-            <span>ETA: {locksmith.eta} min</span>
+            <Navigation className="w-4 h-4 mr-2" />
+            <span>
+              Distance: {typeof locksmith.distance === 'number' 
+                ? `${locksmith.distance.toFixed(1)} km from your location`
+                : 'Unknown'}
+            </span>
           </div>
-        )}
+          
+          {/* 
+            ETA (Estimated Time of Arrival)
+            Calculated based on the distance and an assumed average travel speed
+          */}
+          {locksmith.eta !== undefined && (
+            <div className="flex items-center text-gray-500">
+              <Clock className="w-4 h-4 mr-2" />
+              <span>ETA: {locksmith.eta} min</span>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="border-t border-gray-200 my-4"></div>
@@ -58,6 +103,10 @@ export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetails
           )}
         </div>
 
+        {/* 
+          Service Radius - how far the tradesperson is willing to travel from their HQ
+          This determines the coverage area for their services
+        */}
         <div className="flex items-center text-gray-500">
           <MapPin className="w-4 h-4 mr-2" />
           <span>Service radius: {locksmith.serviceRadius}km</span>

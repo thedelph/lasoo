@@ -1,23 +1,50 @@
+/**
+ * @file MapView.tsx
+ * @description Map component that displays search location and locksmith markers
+ * Represents both current locations and HQ locations for tradespeople
+ */
+
 import React, { useEffect, useState } from 'react'
 import Map, { Marker, MapRef } from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { AlertCircle, MapPin } from 'lucide-react'
+import { AlertCircle, MapPin, Home, Navigation } from 'lucide-react'
 import type { Locksmith } from '../../types/locksmith'
 
+/**
+ * Props for the MapView component
+ */
 interface MapViewProps {
+  /** Reference to the map instance for programmatic control */
   mapRef: React.RefObject<MapRef>
+  /** Current map viewport (center coordinates and zoom level) */
   viewport: {
     latitude: number
     longitude: number
     zoom: number
   }
+  /** Callback for map movement events */
   onMove: (evt: any) => void
+  /** Whether a search has been performed */
   hasSearched: boolean
+  /** Coordinates of the searched location (postcode) */
   searchLocation: { latitude: number; longitude: number } | null
+  /** List of locksmith/tradesperson results within the search radius */
   availableLocksmiths: Locksmith[]
+  /** Callback when a locksmith marker is clicked */
   onMarkerClick: (locksmith: Locksmith) => void
 }
 
+/**
+ * Map component that displays:
+ * 1. The base street map using Mapbox
+ * 2. A pin for the searched postcode location
+ * 3. Numbered circular markers for primary locksmith locations
+ * 4. Navigation icons for current locations (when different from primary)
+ * 5. Home icons for HQ locations (when different from current location)
+ *
+ * @param props - Component props (see MapViewProps interface)
+ * @returns React component
+ */
 export default function MapView({
   mapRef,
   viewport,
@@ -96,28 +123,76 @@ export default function MapView({
           </Marker>
         )}
         
-        {/* Locksmith Markers */}
+        {/* Locksmith/Tradesperson Markers */}
         {hasSearched && availableLocksmiths.map((locksmith, index) => {
-          console.log('Rendering marker:', {
+          console.log('Rendering locksmith:', {
             company: locksmith.companyName,
-            lat: locksmith.latitude,
-            lng: locksmith.longitude
+            locations: locksmith.locations.length
           });
           
+          // Render all locations for this locksmith (both current and HQ locations)
           return (
-            <Marker
-              key={locksmith.id}
-              latitude={locksmith.latitude}
-              longitude={locksmith.longitude}
-              anchor="bottom"
-            >
-              <button 
-                className="w-6 h-6 rounded-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center text-sm font-medium shadow-md"
-                onClick={() => onMarkerClick(locksmith)}
+            <React.Fragment key={locksmith.id}>
+              {/* 
+                Primary marker with numbered indicator (blue circle with number)
+                This is the main marker shown on the map for each tradesperson
+              */}
+              <Marker
+                key={`primary-${locksmith.id}`}
+                latitude={locksmith.latitude}
+                longitude={locksmith.longitude}
+                anchor="bottom"
               >
-                {index + 1}
-              </button>
-            </Marker>
+                <button 
+                  className="w-6 h-6 rounded-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center text-sm font-medium shadow-md"
+                  onClick={() => onMarkerClick(locksmith)}
+                  title={`${locksmith.companyName}`}
+                >
+                  {index + 1}
+                </button>
+              </Marker>
+              
+              {/* 
+                Additional location markers (Navigation icon or Home icon)
+                - Navigation icon = current location if different from primary
+                - Home icon = HQ location (from company postcode) if different from primary
+                
+                These give users visibility of both where the tradesperson is
+                currently located and where their business is headquartered.
+              */}
+              {locksmith.locations.map((location, locIdx) => {
+                // Skip the primary location as it's already shown
+                if (location.latitude === locksmith.latitude && 
+                    location.longitude === locksmith.longitude) {
+                  return null;
+                }
+                
+                return (
+                  <Marker
+                    key={`${locksmith.id}-loc-${locIdx}`}
+                    latitude={location.latitude}
+                    longitude={location.longitude}
+                    anchor="bottom"
+                  >
+                    <div 
+                      className="cursor-pointer"
+                      onClick={() => {
+                        // Ensure we're working with a copy to avoid modifying the original
+                        const locksmithCopy = {...locksmith};
+                        onMarkerClick(locksmithCopy);
+                      }}
+                      title={`${locksmith.companyName} ${location.isCurrentLocation ? '(Current Location)' : '(Headquarters)'}`}
+                    >
+                      {location.isCurrentLocation ? (
+                        <Navigation className="h-5 w-5 text-blue-600" />
+                      ) : (
+                        <Home className="h-5 w-5 text-blue-600" />
+                      )}
+                    </div>
+                  </Marker>
+                );
+              })}
+            </React.Fragment>
           );
         })}
       </Map>

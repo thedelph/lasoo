@@ -77,16 +77,15 @@ The main dashboard layout component for the admin interface.
 Component displaying key metrics and statistics for the platform.
 
 **Key Features:**
-- User count statistics
 - Tradesperson count statistics
 - Subscription statistics
-- New user registration metrics
+- New tradesperson registration metrics
 
 **Implementation Details:**
-- Fetches data from the `users` table
-- Identifies tradespeople by checking for the `service_type` field
+- Fetches data from the `users` table (containing only tradespeople)
+- Uses entries with `service_type` field for categorizing tradespeople
 - Counts active and expired subscriptions based on `subscription_status` field
-- Calculates new users and tradespeople today by comparing creation dates
+- Calculates new tradespeople today by comparing creation dates
 - Displays metrics in responsive card layouts
 - Shows placeholders for future chart implementations
 
@@ -95,18 +94,6 @@ Component displaying key metrics and statistics for the platform.
 
 ## Management Interfaces
 
-### UserManagement.tsx
-
-Interface for viewing and managing platform users.
-
-**Key Features:**
-- User listing with pagination
-- Search and filtering functionality
-- User verification actions
-- User deletion actions
-
-**Usage:**
-- Rendered at the `/admin/users` route
 
 ### TradespeopleManagement.tsx
 
@@ -120,7 +107,7 @@ Interface for viewing and managing tradespeople.
 - Tradesperson deletion actions
 
 **Implementation Details:**
-- Fetches tradespeople from the `users` table where `service_type` is not null
+- Fetches tradespeople from the `users` table (which contains only tradesperson accounts)
 - Displays comprehensive tradesperson information including:
   - Personal and business details
   - Authorization and activation status
@@ -200,7 +187,7 @@ Custom hook for simplifying Supabase queries with loading and error states.
 ```tsx
 const { data, loading, error, refetch } = useSupabaseQuery(
   'users',
-  (query) => query.eq('type', 'customer')
+  (query) => query.eq('service_type', 'locksmith')
 );
 ```
 
@@ -224,5 +211,5 @@ Collection of utility functions for filtering and searching data.
 
 **Usage:**
 ```tsx
-const filteredUsers = applyFilters(users, filters);
+const filteredTradespeople = applyFilters(tradespeople, filters);
 ```

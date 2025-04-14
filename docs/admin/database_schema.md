@@ -6,7 +6,7 @@ This document provides detailed information about the database structure used in
 
 ### Users Table
 
-The `users` table stores information about all users in the system, including both customers and tradespeople.
+The `users` table stores information about all tradespeople in the system. Regular users/customers don't need accounts.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -30,7 +30,7 @@ The `users` table stores information about all users in the system, including bo
 - Boolean fields (`is_authorized`, `is_activated`) are stored as smallint (1/0) rather than boolean values
 - When updating these fields, use numeric values (1/0) instead of boolean values (true/false)
 - The field `fullname` (without underscore) is used for the user's name, not `full_name`
-- Users with a non-null `service_type` are considered tradespeople
+- All entries in the table are tradespeople with their corresponding `service_type`
 
 ### Profiles Table
 
@@ -52,19 +52,12 @@ The `profiles` table contains additional information about users that is not sto
 
 ## Field Usage in Components
 
-### UserManagement Component
 
-The `UserManagement.tsx` component displays users in the admin dashboard:
-
-- Uses `fullname` from the `users` table for displaying user names
-- Falls back to "No Name" if `fullname` is null
-- Uses phone number from either `users.phone` or `profiles.phone`
 
 ### TradespeopleManagement Component
 
 The `TradespeopleManagement.tsx` component displays tradespeople in the admin dashboard:
 
-- Filters users where `service_type` is not null
 - Uses fields from the `users` table for displaying tradesperson information
 
 ## Common Issues and Solutions

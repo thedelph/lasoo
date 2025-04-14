@@ -13,9 +13,8 @@ The admin backend has been implemented with the following components:
 
 - **Authentication System**: Email-based admin authentication with role verification
 - **Dashboard & Analytics**: 
-  - Overview of key platform metrics including user counts, tradesperson counts, and subscription statistics
+  - Overview of key platform metrics including tradesperson counts and subscription statistics
   - Placeholder sections for future chart implementations
-- **User Management**: Interface for managing platform users
 - **Tradesperson Management**: 
   - Complete interface for managing tradespeople
   - Authorization and activation workflow
@@ -53,7 +52,7 @@ The admin panel routes are configured to work in both development and production
 
 ### Users Table
 
-The `users` table has the following structure:
+The `users` table contains information about tradespeople in the system (regular users/customers don't need accounts):
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -81,10 +80,10 @@ The `users` table has the following structure:
 
 ### Common Issues
 
-1. **Users showing as "No Name" in dashboard**
+1. **Tradespeople showing as "No Name" in dashboard**
    - Fixed in April 2025 update
    - Issue was caused by a field name mismatch between database schema (`fullname`) and code reference (`full_name`)
-   - Solution: Updated the `UserManagement.tsx` component to use the correct field name from the users table
+   - Solution: Updated the components to use the correct field name from the users table
 
 2. **Boolean field updates not working**
    - Remember that `is_authorized` and `is_activated` are stored as smallint (1/0) in the database

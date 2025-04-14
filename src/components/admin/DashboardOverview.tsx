@@ -2,21 +2,17 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase/client';
 
 interface DashboardStats {
-  totalUsers: number;
   totalTradespeople: number;
   activeSubscriptions: number;
   expiredSubscriptions: number;
-  newUsersToday: number;
   newTradespeopleToday: number;
 }
 
 const DashboardOverview = () => {
   const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
     totalTradespeople: 0,
     activeSubscriptions: 0,
     expiredSubscriptions: 0,
-    newUsersToday: 0,
     newTradespeopleToday: 0
   });
   const [loading, setLoading] = useState(true);
@@ -44,24 +40,19 @@ const DashboardOverview = () => {
       // Count tradespeople (those with service_type not null or empty)
       const tradespeople = allUsers.filter(user => user.service_type);
       
-      // Count users with active subscriptions
+      // Count tradespeople with active subscriptions
       const activeSubscriptions = allUsers.filter(user => 
         user.subscription_status === 'Active'
       );
       
-      // Count users with expired subscriptions
+      // Count tradespeople with expired subscriptions
       const expiredSubscriptions = allUsers.filter(user => 
         user.subscription_status === 'Expired'
       );
       
-      // Get new users today
+      // Get new tradespeople today
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
-      const newUsersToday = allUsers.filter(user => {
-        const createdAt = new Date(user.created_at);
-        return createdAt >= today && !user.service_type;
-      });
       
       // Get new tradespeople today
       const newTradespeopleToday = allUsers.filter(user => {
@@ -70,11 +61,9 @@ const DashboardOverview = () => {
       });
       
       setStats({
-        totalUsers: allUsers.length - tradespeople.length,
         totalTradespeople: tradespeople.length,
         activeSubscriptions: activeSubscriptions.length,
         expiredSubscriptions: expiredSubscriptions.length,
-        newUsersToday: newUsersToday.length,
         newTradespeopleToday: newTradespeopleToday.length
       });
       
@@ -105,29 +94,10 @@ const DashboardOverview = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Total Users Card */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-          </div>
-          <div className="mt-4">
-            <p className="text-sm text-gray-600">
-              <span className="text-green-500 font-semibold">+{stats.newUsersToday}</span> new today
-            </p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Total Tradespeople Card */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 col-span-1">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Tradespeople</p>
@@ -147,7 +117,7 @@ const DashboardOverview = () => {
         </div>
 
         {/* Subscriptions Card */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 col-span-1">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Active Subscriptions</p>

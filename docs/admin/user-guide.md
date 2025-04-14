@@ -1,16 +1,15 @@
 # Admin Backend User Guide
 
-This guide provides detailed instructions for using the Lasoo admin backend system. The admin backend allows authorized administrators to monitor and manage users, tradespeople, subscriptions, and view real-time location data.
+This guide provides detailed instructions for using the Lasoo admin backend system. The admin backend allows authorized administrators to monitor and manage tradespeople, subscriptions, and view real-time location data.
 
 ## Table of Contents
 
 1. [Accessing the Admin Backend](#accessing-the-admin-backend)
 2. [Dashboard Overview](#dashboard-overview)
-3. [User Management](#user-management)
-4. [Tradesperson Management](#tradesperson-management)
-5. [Subscription Management](#subscription-management)
-6. [God Mode Map](#god-mode-map)
-7. [Troubleshooting](#troubleshooting)
+3. [Tradesperson Management](#tradesperson-management)
+4. [Subscription Management](#subscription-management)
+5. [God Mode Map](#god-mode-map)
+6. [Troubleshooting](#troubleshooting)
 
 ## Accessing the Admin Backend
 
@@ -24,37 +23,17 @@ This guide provides detailed instructions for using the Lasoo admin backend syst
 
 The dashboard provides a comprehensive overview of key platform metrics:
 
-- **Total Users**: Count of all registered customers (non-tradespeople)
 - **Total Tradespeople**: Count of all registered service providers
-- **Active Subscriptions**: Count of all users with "Active" subscription status
-- **Expired Subscriptions**: Count of all users with "Expired" subscription status
-- **New Users Today**: Count of customers who registered today
+- **Active Subscriptions**: Count of all tradespeople with "Active" subscription status
+- **Expired Subscriptions**: Count of all tradespeople with "Expired" subscription status
 - **New Tradespeople Today**: Count of service providers who registered today
 
 The dashboard also includes placeholder sections for future implementation of:
-- User growth trends chart
+- Tradesperson growth trends chart
 - Subscription revenue chart
 - Recent platform activity chart
 
-## User Management
 
-The User Management section allows you to view and manage all platform users:
-
-### Features
-
-- **Search**: Find users by name, email, or phone number
-- **Filtering**: Filter users by type (customers or tradespeople)
-- **User Details**: View comprehensive user information
-- **User Actions**:
-  - Verify users
-  - Delete user accounts
-
-### Instructions
-
-1. Navigate to the "Users" section from the sidebar
-2. Use the search bar to find specific users
-3. Use the filter dropdown to view specific user types
-4. Click on action buttons to perform operations on user accounts
 
 ## Tradesperson Management
 
