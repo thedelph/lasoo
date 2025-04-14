@@ -6,6 +6,7 @@ import type { Profile } from '../../../types/profile';
 export default function CompanyDetailsTab() {
   const { profile, loading, updateProfile } = useSupabaseProfile();
   const [saving, setSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<Partial<Profile>>({
     company_name: '',
     telephone_number: '',
@@ -43,12 +44,24 @@ export default function CompanyDetailsTab() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent multiple rapid submissions
+    if (saving || isSubmitting) {
+      console.log('Submission already in progress, ignoring duplicate submit');
+      return;
+    }
+    
+    setIsSubmitting(true);
     setSaving(true);
 
     try {
       await updateProfile(formData);
     } finally {
       setSaving(false);
+      // Add a small delay before allowing new submissions
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 500);
     }
   };
 

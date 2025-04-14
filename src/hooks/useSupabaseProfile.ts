@@ -80,46 +80,52 @@ export function useSupabaseProfile() {
         
         console.log('New user profile created:', newUser);
         // Convert user data to profile format for compatibility
-        const profileData: Profile = {
-          id: newUser.user_id,
-          company_name: newUser.company_name,
-          telephone_number: newUser.phone || null,
-          website: null,
-          address_line1: null,
-          address_line2: null,
-          city: null,
-          county: null,
-          postcode: newUser.company_postcode || null,
-          country: 'United Kingdom',
-          service_radius: 10, // Default value since it's not in the users table
-          share_location: false, // Default value since it's not in the users table
-          latitude: null,
-          longitude: null,
-          created_at: newUser.created_at,
-          updated_at: newUser.created_at
-        };
+        // Extract metadata from user record if available (use an empty object if null/undefined)
+      const userMetadata = newUser.metadata || {};
+      
+      const profileData: Profile = {
+        id: newUser.user_id,
+        company_name: newUser.company_name,
+        telephone_number: newUser.phone || null,
+        website: userMetadata.website || null,
+        address_line1: userMetadata.address_line1 || null,
+        address_line2: userMetadata.address_line2 || null,
+        city: userMetadata.city || null,
+        county: userMetadata.county || null,
+        postcode: newUser.company_postcode || null,
+        country: userMetadata.country || 'United Kingdom',
+        service_radius: typeof newUser.service_radius !== 'undefined' ? newUser.service_radius : 10,
+        share_location: typeof newUser.share_location !== 'undefined' ? newUser.share_location : false,
+        latitude: newUser.latitude || null,
+        longitude: newUser.longitude || null,
+        created_at: newUser.created_at,
+        updated_at: newUser.created_at
+      };
         setProfile(profileData);
       } else {
         console.log('Found existing user:', existingUser);
         // Convert user data to profile format for compatibility
-        const profileData: Profile = {
-          id: existingUser.user_id,
-          company_name: existingUser.company_name,
-          telephone_number: existingUser.phone || null,
-          website: null,
-          address_line1: null,
-          address_line2: null,
-          city: null,
-          county: null,
-          postcode: existingUser.company_postcode || null,
-          country: 'United Kingdom',
-          service_radius: 10, // Default value since it's not in the users table
-          share_location: false, // Default value since it's not in the users table
-          latitude: null,
-          longitude: null,
-          created_at: existingUser.created_at,
-          updated_at: existingUser.created_at
-        };
+        // Extract metadata from user record if available (use an empty object if null/undefined)
+      const userMetadata = existingUser.metadata || {};
+      
+      const profileData: Profile = {
+        id: existingUser.user_id,
+        company_name: existingUser.company_name,
+        telephone_number: existingUser.phone || null,
+        website: userMetadata.website || null,
+        address_line1: userMetadata.address_line1 || null,
+        address_line2: userMetadata.address_line2 || null,
+        city: userMetadata.city || null,
+        county: userMetadata.county || null,
+        postcode: existingUser.company_postcode || null,
+        country: userMetadata.country || 'United Kingdom',
+        service_radius: typeof existingUser.service_radius !== 'undefined' ? existingUser.service_radius : 10,
+        share_location: typeof existingUser.share_location !== 'undefined' ? existingUser.share_location : false,
+        latitude: existingUser.latitude || null,
+        longitude: existingUser.longitude || null,
+        created_at: existingUser.created_at,
+        updated_at: existingUser.created_at
+      };
         setProfile(profileData);
       }
       
@@ -147,6 +153,29 @@ export function useSupabaseProfile() {
       if (updates.telephone_number !== undefined) userUpdates.phone = updates.telephone_number;
       if (updates.postcode !== undefined) userUpdates.company_postcode = updates.postcode;
       
+      // Map service settings to dedicated columns
+      if (updates.service_radius !== undefined) userUpdates.service_radius = updates.service_radius;
+      if (updates.share_location !== undefined) userUpdates.share_location = updates.share_location;
+      if (updates.latitude !== undefined) userUpdates.latitude = updates.latitude;
+      if (updates.longitude !== undefined) userUpdates.longitude = updates.longitude;
+      
+      // Map additional address fields to the metadata field
+      const metaData: Record<string, any> = {};
+      let hasMetaDataUpdates = false;
+      
+      // Collect address fields in metadata
+      if (updates.address_line1 !== undefined) { metaData.address_line1 = updates.address_line1; hasMetaDataUpdates = true; }
+      if (updates.address_line2 !== undefined) { metaData.address_line2 = updates.address_line2; hasMetaDataUpdates = true; }
+      if (updates.city !== undefined) { metaData.city = updates.city; hasMetaDataUpdates = true; }
+      if (updates.county !== undefined) { metaData.county = updates.county; hasMetaDataUpdates = true; }
+      if (updates.country !== undefined) { metaData.country = updates.country; hasMetaDataUpdates = true; }
+      if (updates.website !== undefined) { metaData.website = updates.website; hasMetaDataUpdates = true; }
+      
+      // If we have metadata updates, add them to the user updates
+      if (hasMetaDataUpdates) {
+        userUpdates.metadata = metaData;
+      }
+      
       console.log('Updating user profile:', userUpdates);
       const { error: updateError } = await supabase
         .from('users')
@@ -172,22 +201,25 @@ export function useSupabaseProfile() {
 
       console.log('User profile updated:', updatedUser);
       
+      // Extract metadata from user record if available (use an empty object if null/undefined)
+      const userMetadata = updatedUser.metadata || {};
+      
       // Convert updated user data to profile format for compatibility
       const profileData: Profile = {
         id: updatedUser.user_id,
         company_name: updatedUser.company_name,
         telephone_number: updatedUser.phone || null,
-        website: null,
-        address_line1: null,
-        address_line2: null,
-        city: null,
-        county: null,
+        website: userMetadata.website || null,
+        address_line1: userMetadata.address_line1 || null,
+        address_line2: userMetadata.address_line2 || null,
+        city: userMetadata.city || null,
+        county: userMetadata.county || null,
         postcode: updatedUser.company_postcode || null,
-        country: 'United Kingdom',
-        service_radius: 10, // Default value since it's not in the users table
-        share_location: false, // Default value since it's not in the users table
-        latitude: null,
-        longitude: null,
+        country: userMetadata.country || 'United Kingdom',
+        service_radius: typeof updatedUser.service_radius !== 'undefined' ? updatedUser.service_radius : 10,
+        share_location: typeof updatedUser.share_location !== 'undefined' ? updatedUser.share_location : false,
+        latitude: updatedUser.latitude || null,
+        longitude: updatedUser.longitude || null,
         created_at: updatedUser.created_at,
         updated_at: new Date().toISOString()
       };

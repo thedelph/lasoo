@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { useSupabaseProfile } from "../../../hooks/useSupabaseProfile";
 import { AlertCircle, MapPin, Loader2, Globe, Target, Navigation, Info } from "lucide-react";
 import { toast } from "sonner";
+import { formatUKPostcode, isValidUKPostcode } from "../../../utils/postcodeUtils";
 
 export default function ServiceAreaTab() {
   const { profile, loading: profileLoading, updateProfile } = useSupabaseProfile();
   const [saving, setSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     service_radius: 10,
     share_location: false,
@@ -13,32 +15,20 @@ export default function ServiceAreaTab() {
     latitude: null as number | null,
     longitude: null as number | null
   });
+  const [postcodeError, setPostcodeError] = useState("");
+  const [geocodingAttempted, setGeocodingAttempted] = useState(false);
 
-  useEffect(() => {
-    if (profile) {
-      setFormData({
-        service_radius: profile.service_radius || 10,
-        share_location: profile.share_location || false,
-        postcode: profile.postcode || "",
-        latitude: profile.latitude,
-        longitude: profile.longitude
-      });
-    }
-  }, [profile]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    console.group('Service Area Update');
-
+  // Function to geocode a postcode and get coordinates
+  const geocodePostcode = async (postcode: string) => {
+    if (!postcode) return null;
+    
     try {
-      // Get coordinates from postcode using Mapbox
       const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
       if (!mapboxToken) throw new Error('Mapbox token not found');
 
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          formData.postcode
+          postcode
         )}.json?country=GB&types=postcode&access_token=${mapboxToken}`
       );
 
@@ -49,19 +39,175 @@ export default function ServiceAreaTab() {
       const data = await response.json();
       
       if (!data.features || data.features.length === 0) {
-        throw new Error('Invalid postcode');
+        throw new Error('Postcode not found');
+      }
+
+      return {
+        longitude: data.features[0].center[0],
+        latitude: data.features[0].center[1]
+      };
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return null;
+    }
+  };
+
+  // Manually trigger geocoding for a postcode with an option to update the database
+  const manualGeocodePostcode = async (postcodeValue: string) => {
+    console.log('Manual geocoding triggered for postcode:', postcodeValue);
+    
+    try {
+      const formattedPostcode = formatUKPostcode(postcodeValue);
+      if (!isValidUKPostcode(formattedPostcode)) {
+        console.error('Invalid postcode format:', formattedPostcode);
+        toast.error('Invalid UK postcode format');
+        return null;
+      }
+      
+      const coords = await geocodePostcode(formattedPostcode);
+      if (!coords) {
+        console.error('Geocoding failed for postcode:', formattedPostcode);
+        toast.error('Could not find coordinates for this postcode');
+        return null;
+      }
+      
+      console.log('Geocoding successful, got coordinates:', coords);
+      
+      // Update formData with new coordinates
+      setFormData(prev => ({
+        ...prev,
+        latitude: coords.latitude,
+        longitude: coords.longitude
+      }));
+      
+      toast.success('Location coordinates set successfully');
+      
+      // Return the coordinates in case caller needs them
+      return coords;
+    } catch (error) {
+      console.error('Error in manual geocoding:', error);
+      toast.error('Error getting coordinates');
+      return null;
+    }
+  };
+  
+  // Force geocoding on component load
+  // Only do initial geocoding once per component mount
+  const [initialGeocodingDone, setInitialGeocodingDone] = useState(false);
+  
+  useEffect(() => {
+    // Skip if we've already done the initial geocoding
+    if (initialGeocodingDone) return;
+    
+    const loadAndGeocode = async () => {
+      console.log('Component mounted, profile loaded:', !!profile);
+      
+      if (!profile) return;
+      
+      // Initialize form data from profile
+      const newFormData = {
+        service_radius: profile.service_radius || 10,
+        share_location: profile.share_location || false,
+        postcode: profile.postcode || "",
+        latitude: profile.latitude,
+        longitude: profile.longitude
+      };
+      
+      console.log('Setting initial form data:', newFormData);
+      setFormData(newFormData);
+      
+      // Mark that we've done initial geocoding to prevent loops
+      setInitialGeocodingDone(true);
+      
+      // If we already have coordinates, don't geocode
+      if (newFormData.latitude && newFormData.longitude) {
+        console.log('Coordinates already exist, skipping geocoding');
+        return;
+      }
+      
+      // Only geocode if we have a postcode but no coordinates
+      if (newFormData.postcode && (!newFormData.latitude || !newFormData.longitude)) {
+        console.log('Have postcode but no coordinates, attempting geocoding');
+        
+        // Get coordinates but don't update the profile in the database
+        // Just update the local state to show the success message
+        const coords = await manualGeocodePostcode(newFormData.postcode);
+        
+        if (coords) {
+          setFormData(prev => ({
+            ...prev,
+            latitude: coords.latitude,
+            longitude: coords.longitude
+          }));
+        }
+      }
+    };
+    
+    loadAndGeocode();
+  }, [profile, initialGeocodingDone]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    // Prevent multiple rapid submissions
+    if (saving || isSubmitting) {
+      console.log('Submission already in progress, ignoring duplicate submit');
+      return;
+    }
+  
+    setIsSubmitting(true);
+    setSaving(true);
+    console.group('Service Area Update');
+
+    try {
+      // Format and validate the postcode first
+      const formattedPostcode = formatUKPostcode(formData.postcode);
+      
+      if (!isValidUKPostcode(formattedPostcode)) {
+        throw new Error('Invalid UK postcode format. Please use a valid format (e.g., SW1A 1AA)');
+      }
+      
+      console.log('Submit: Geocoding postcode:', formattedPostcode);
+      
+      // Get coordinates from postcode using Mapbox
+      const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+      if (!mapboxToken) throw new Error('Mapbox token not found');
+
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          formattedPostcode
+        )}.json?country=GB&types=postcode&access_token=${mapboxToken}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Geocoding failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('Submit: Geocoding response:', data);
+      
+      if (!data.features || data.features.length === 0) {
+        throw new Error('Postcode not found. Please check and try again.');
       }
 
       const [longitude, latitude] = data.features[0].center;
+      console.log('Submit: Got coordinates:', { latitude, longitude });
 
-      // Use the updateProfile function from useSupabaseProfile hook
+      // First update the form data to immediately reflect in the UI
+      setFormData(prev => ({
+        ...prev,
+        latitude,
+        longitude,
+        postcode: formattedPostcode
+      }));
+      
+      // Then update only the profile fields that are actually in the users table
+      // The user table doesn't have latitude/longitude fields directly
+      // So we just update the postcode and other fields here
       await updateProfile({
         service_radius: formData.service_radius,
         share_location: formData.share_location,
-        postcode: formData.postcode,
-        latitude,
-        longitude,
-        updated_at: new Date().toISOString()
+        postcode: formattedPostcode // Use the properly formatted postcode
       });
 
       setFormData(prev => ({
@@ -77,6 +223,10 @@ export default function ServiceAreaTab() {
     } finally {
       console.groupEnd();
       setSaving(false);
+      // Add a small delay before allowing new submissions
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 500);
     }
   };
 
@@ -125,11 +275,25 @@ export default function ServiceAreaTab() {
             <div>
               <h3 className="font-medium text-amber-800">No Location Set</h3>
               <p className="mt-1 text-sm text-amber-700">
-                Please enter your business postcode to set your location on the map.
+                {formData.postcode ? 
+                  <>
+                    Your postcode <strong>{formData.postcode}</strong> has been saved, but coordinates need to be set. 
+                    Click the "Save Location Settings" button to geocode your postcode and set your location.
+                  </> : 
+                  "Please enter your business postcode to set your location on the map."}
               </p>
               <p className="mt-2 text-xs text-amber-600">
                 Without a location, customers won't be able to find your services.
               </p>
+              {formData.postcode && (
+                <button 
+                  type="button"
+                  className="mt-2 text-xs font-medium text-amber-800 underline"
+                  onClick={() => manualGeocodePostcode(formData.postcode)}
+                >
+                  Click here to try geocoding again
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -158,14 +322,37 @@ export default function ServiceAreaTab() {
                   <input
                     id="postcode"
                     type="text"
-                    className="w-full rounded-md border border-slate-300 pl-10 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className={`w-full rounded-md border pl-10 py-2 text-sm shadow-sm focus:ring-1 focus:ring-blue-500 ${postcodeError ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-blue-500'}`}
                     value={formData.postcode}
-                    onChange={(e) => setFormData(prev => ({ ...prev, postcode: e.target.value }))}
-                    placeholder="e.g., M4 7AZ"
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      setFormData(prev => ({ ...prev, postcode: newValue }));
+                      // Clear error if field is empty
+                      if (!newValue) {
+                        setPostcodeError("");
+                      }
+                    }}
+                    onBlur={() => {
+                      // Validate on blur if there's content
+                      if (formData.postcode) {
+                        const formatted = formatUKPostcode(formData.postcode);
+                        if (!isValidUKPostcode(formatted)) {
+                          setPostcodeError("Please enter a valid UK postcode (e.g., SW1A 1AA)");
+                        } else {
+                          setPostcodeError("");
+                          // Update the field with formatted version
+                          setFormData(prev => ({ ...prev, postcode: formatted }));
+                        }
+                      }
+                    }}
+                    placeholder="e.g., SW1A 1AA"
                     required
                     disabled={saving}
                   />
                 </div>
+                {postcodeError && (
+                  <p className="mt-1 text-sm text-red-600">{postcodeError}</p>
+                )}
                 <p className="text-xs text-slate-500">
                   Enter the postcode of your business location
                 </p>

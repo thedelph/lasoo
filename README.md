@@ -50,6 +50,10 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
 
 ## Recent Updates
 
+- **Profile Management Enhancement**: Fixed duplicate user entries issue and implemented robust form submission handling to prevent race conditions
+- **Database Optimization**: Added unique constraints and indexes to the users table for improved data integrity and query performance
+- **Geocoding Integration**: Enhanced postcode validation and geocoding for service area management with proper error handling
+- **Profile Metadata Storage**: Implemented flexible JSONB storage for additional profile information that doesn't fit into standard columns
 - **Authentication UI Update**: Implemented Shadcn/UI components for login and registration pages with improved user experience
 - **Authentication Migration**: Migrated from Clerk to Supabase Auth for a unified authentication system across web and mobile platforms
 - **Admin Panel Routing Fix**: Updated admin dashboard route to use wildcard pattern (`/admin/dashboard/*`) for proper nested route handling in production
@@ -72,6 +76,8 @@ The application is configured for deployment on Vercel. See the [Deployment Guid
 - [Auth Migration Guide](./docs/auth-migration-guide.md)
 - [Troubleshooting Guide](./docs/troubleshooting-guide.md)
 - [Deployment Guide](./docs/deployment-guide.md)
+- [Database Schema Guide](./docs/database-schema-guide.md)
+- [Profile Management Guide](./docs/profile-management-guide.md)
 
 ## Project Structure
 
