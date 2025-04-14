@@ -178,13 +178,14 @@ export function useLocksmiths() {
 
       console.log(`Found ${locations.length} location entries`);
 
-      // Step 4: Join users and locations manually
+      // Step 4: Join users and locations manually, but don't filter out users without locations
+      // This allows finding locksmiths by their HQ location (company_postcode) even if they're not sharing live location
       const usersWithLocations: UserRecord[] = filteredUsers.map(user => {
         const userLocation = locations.find(
           location => location.user_id === user.user_id
         );
         return { ...user, location: userLocation };
-      }).filter((user): user is UserRecord & { location: LocationRecord } => !!user.location);
+      });
 
       console.log(`Found ${usersWithLocations.length} users with valid locations`);
 
@@ -194,19 +195,27 @@ export function useLocksmiths() {
       // We'll need to geocode HQ locations first to determine if they're in range
       const usersWithHQPromises = await Promise.all(
         usersWithLocations.map(async user => {
-          if (!user.location) {
-            console.log(`${user.company_name}: No location data`);
+          // If user has no location data but has a company_postcode, we can still show them
+          // using just their HQ location
+          if (!user.location && !user.company_postcode) {
+            console.log(`${user.company_name}: No location data and no company_postcode`);
             return { user, inRange: false, distance: null, hqCoords: null };
           }
           
-          // Current location data
-          const currentLat = Number(user.location.latitude);
-          const currentLng = Number(user.location.longitude);
-          
-          // By default, measure from current location
-          let measureLat = currentLat;
-          let measureLng = currentLng;
+          // Default measurement coordinates
+          let measureLat: number | null = null;
+          let measureLng: number | null = null;
           let hqCoords = null;
+          
+          // If we have current location data, store it
+          if (user.location) {
+            const currentLat = Number(user.location.latitude);
+            const currentLng = Number(user.location.longitude);
+            
+            // Initialize measurement point with current location
+            measureLat = currentLat;
+            measureLng = currentLng;
+          }
           
           // If company postcode exists, try to geocode it to use as HQ
           if (user.company_postcode) {
@@ -216,6 +225,8 @@ export function useLocksmiths() {
               if (geocoded) {
                 console.log(`HQ location for ${user.company_name}: ${geocoded.latitude}, ${geocoded.longitude}`);
                 // Use HQ coordinates for distance measurement
+                // This overrides current location as the measurement point
+                // because we want to measure service radius from HQ
                 measureLat = geocoded.latitude;
                 measureLng = geocoded.longitude;
                 hqCoords = geocoded;
@@ -223,6 +234,12 @@ export function useLocksmiths() {
             } catch (error) {
               console.error(`Failed to geocode HQ for ${user.company_name}:`, error);
             }
+          }
+          
+          // If we don't have valid measurement coordinates, this locksmith can't be included
+          if (measureLat === null || measureLng === null) {
+            console.log(`${user.company_name}: No valid coordinates for distance calculation`);
+            return { user, inRange: false, distance: null, hqCoords: null };
           }
           
           // Calculate distance from search location to measurement point (HQ if available, otherwise current)
@@ -252,15 +269,18 @@ export function useLocksmiths() {
 
       // Step 6: Map to Locksmith type with multiple locations
       const locksmithPromises = inRangeUsers.map(async user => {
-        // Current location from locations table
-        const currentLocation: Location = {
-          latitude: Number(user.location!.latitude),
-          longitude: Number(user.location!.longitude),
-          isCurrentLocation: true
-        };
+        // Create array to store all locations for this locksmith
+        const locations: Location[] = [];
         
-        // Store all locations in an array
-        const locations: Location[] = [currentLocation];
+        // Add current location if available (user is sharing location)
+        if (user.location) {
+          const currentLocation: Location = {
+            latitude: Number(user.location.latitude),
+            longitude: Number(user.location.longitude),
+            isCurrentLocation: true
+          };
+          locations.push(currentLocation);
+        }
         
         // We already have the distance calculated from HQ or current location
         const distance = user.distance || 0;
@@ -281,10 +301,18 @@ export function useLocksmiths() {
             const hqCoords = await geocodePostcode(user.company_postcode, mapboxToken);
             
             if (hqCoords) {
-              // Check if HQ location is different from current location
-              const isDifferentLocation = 
-                Math.abs(hqCoords.latitude - currentLocation.latitude) > 0.001 || 
-                Math.abs(hqCoords.longitude - currentLocation.longitude) > 0.001;
+              // Check if HQ location is different from current location (if it exists)
+              let isDifferentLocation = true;
+              
+              // Only compare if we have a current location
+              if (user.location) {
+                const currentLat = Number(user.location.latitude);
+                const currentLng = Number(user.location.longitude);
+                
+                isDifferentLocation = 
+                  Math.abs(hqCoords.latitude - currentLat) > 0.001 || 
+                  Math.abs(hqCoords.longitude - currentLng) > 0.001;
+              }
               
               if (isDifferentLocation) {
                 // Add HQ location
@@ -301,23 +329,28 @@ export function useLocksmiths() {
           }
         }
         
+        // If we have no locations at all, use HQ coordinates as primary
+        const primaryLocation = locations.length > 0 ? locations[0] : 
+                                user.hqCoords ? { latitude: user.hqCoords.latitude, longitude: user.hqCoords.longitude } :
+                                { latitude: 0, longitude: 0 };
+        
         return {
           id: String(user.id),
           companyName: user.company_name || 'Unknown Company',
           telephoneNumber: user.phone || '',
           website: undefined, // We don't have website information
           servicesOffered: [user.service_type || 'Locksmith'],
-          // Use current location as primary coordinates
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude,
+          // Use either current location or HQ location as primary coordinates
+          latitude: primaryLocation.latitude,
+          longitude: primaryLocation.longitude,
           // Store all locations
           locations: locations,
           // Store distance from search location
-          distance: distance,
+          distance: distance || 0,
           // Store HQ postcode for reference
           hqPostcode: user.company_postcode,
           serviceRadius: radiusKm, // Default service radius
-          eta: Math.round(distance * 2 + 10)
+          eta: Math.round((distance || 0) * 2 + 10)
         };
       });
 
