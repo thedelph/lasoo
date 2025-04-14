@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Header from './landing/Header'
+import Header from './landing/SupabaseHeader'
 import Footer from './landing/Footer'
 import HeroSection from './landing/HeroSection'
 import Features from './landing/Features'

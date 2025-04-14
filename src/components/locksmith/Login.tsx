@@ -23,29 +23,35 @@ export default function Login() {
       if (error) throw error;
       if (!data.user) throw new Error("Login failed");
 
-      // Verify profile exists
-      const { error: profileError } = await supabase
-        .from('profiles')
+      // Verify user exists in users table
+      const { error: userError } = await supabase
+        .from('users')
         .select('*')
-        .eq('id', data.user.id)
+        .eq('user_id', data.user.id)
         .single();
 
-      if (profileError && profileError.code === 'PGRST116') {
-        // Profile doesn't exist, create it
+      if (userError && userError.code === 'PGRST116') {
+        // User record doesn't exist, create it
         const { error: createError } = await supabase
-          .from('profiles')
+          .from('users')
           .insert([
             {
-              id: data.user.id,
+              user_id: data.user.id,
+              fullname: data.user.user_metadata.full_name || '',
               company_name: data.user.user_metadata.company_name || 'Unknown Company',
+              phone: '',
+              email: email,
+              is_authorized: 1,
+              is_activated: 1,
               created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
+              company_postcode: null,
+              service_type: 'Locksmith'
             }
           ]);
 
         if (createError) throw createError;
-      } else if (profileError) {
-        throw profileError;
+      } else if (userError) {
+        throw userError;
       }
       
       toast.success("Login successful!");

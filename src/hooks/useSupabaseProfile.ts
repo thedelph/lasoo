@@ -1,62 +1,19 @@
+/**
+ * @file useSupabaseProfile.ts
+ * @description Hook for managing user profiles using Supabase Auth
+ */
+
 import { useState, useEffect } from 'react';
-import { useUser, useAuth } from '@clerk/clerk-react';
-import { supabase, createSupabaseWithAuth } from '../lib/supabase/client';
+import { supabase } from '../lib/supabase/client';
 import { toast } from 'sonner';
 import type { Profile } from '../types/profile';
+import { useSupabaseAuth } from './useSupabaseAuth';
 
-// Define a type for the user object based on what we're using
-interface ClerkUser {
-  id: string;
-  publicMetadata: {
-    company_name?: string | null;
-    [key: string]: any;
-  };
-}
-
-export function useProfile() {
+export function useSupabaseProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { user, isSignedIn } = useUser();
-  const { getToken } = useAuth();
-  const [supabaseClient, setSupabaseClient] = useState(supabase);
-
-  const setupAuth = async () => {
-    if (!isSignedIn || !user) {
-      console.log('No authenticated user:', { isSignedIn, userId: (user as ClerkUser | null)?.id });
-      throw new Error('No authenticated user');
-    }
-    
-    try {
-      console.log('Getting token from Clerk...');
-      const token = await getToken({ 
-        template: 'supabase',
-        skipCache: true
-      });
-      
-      if (!token) {
-        console.error('No token received from Clerk');
-        throw new Error('Failed to get Supabase token');
-      }
-
-      console.log('Token received:', { 
-        length: token.length,
-        preview: `${token.slice(0, 20)}...${token.slice(-20)}`
-      });
-
-      // Create a new Supabase client with the auth token
-      const authClient = createSupabaseWithAuth(token);
-      setSupabaseClient(authClient);
-
-      return token;
-    } catch (err) {
-      console.error('Auth setup error:', {
-        error: err,
-        message: err instanceof Error ? err.message : 'Unknown error'
-      });
-      throw err;
-    }
-  };
+  const { user, isSignedIn, isLoaded } = useSupabaseAuth();
 
   const loadProfile = async () => {
     if (!isSignedIn || !user) {
@@ -66,50 +23,59 @@ export function useProfile() {
     }
 
     try {
-      await setupAuth();
-      
-      const clerkUser = user as ClerkUser;
-      console.log('Fetching user for user_id:', clerkUser.id);
-      const { data: existingUser, error: fetchError } = await supabaseClient
+      console.log('Fetching user for user_id:', user.id);
+      // Use the RPC approach for better compatibility
+      const { data: existingUserArray, error: fetchError } = await supabase
         .from('users')
         .select('*')
-        .eq('user_id', clerkUser.id)
-        .single();
+        .filter('user_id', 'eq', user.id);
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (fetchError) {
         console.error('User fetch error:', fetchError);
         throw fetchError;
       }
+      
+      // Extract the first user if available
+      const existingUser = existingUserArray && existingUserArray.length > 0 
+        ? existingUserArray[0] 
+        : null;
 
       if (!existingUser) {
         console.log('Creating new user profile...');
         const newUserData = {
-          user_id: clerkUser.id,
-          fullname: user.fullName || '',
-          company_name: clerkUser.publicMetadata?.company_name || null,
+          user_id: user.id,
+          fullname: user.user_metadata?.full_name || '',
+          company_name: user.user_metadata?.company_name || null,
           created_at: new Date().toISOString(),
           phone: '',
-          email: user.emailAddresses[0]?.emailAddress || '',
+          email: user.email || '',
           is_authorized: 1,
           is_activated: 1,
           company_postcode: null,
           service_type: 'Locksmith'
-          // These fields don't exist in the users table yet
-          // service_radius: 10,
-          // share_location: false
         };
 
         console.log('New user data:', newUserData);
 
-        const { data: newUser, error: createError } = await supabaseClient
+        const { error: createError } = await supabase
           .from('users')
-          .insert([newUserData])
-          .select()
-          .single();
+          .insert([newUserData]);
         
         if (createError) {
           console.error('User creation error:', createError);
           throw new Error('Failed to create user profile');
+        }
+        
+        // Fetch the newly created user
+        const { data: newUsers } = await supabase
+          .from('users')
+          .select('*')
+          .filter('user_id', 'eq', user.id);
+          
+        const newUser = newUsers && newUsers.length > 0 ? newUsers[0] : null;
+        
+        if (!newUser) {
+          throw new Error('Failed to retrieve created user profile');
         }
         
         console.log('New user profile created:', newUser);
@@ -173,9 +139,6 @@ export function useProfile() {
     }
 
     try {
-      await setupAuth();
-      const clerkUser = user as ClerkUser;
-
       // Convert profile updates to user table format
       const userUpdates: Record<string, any> = {};
       
@@ -183,21 +146,28 @@ export function useProfile() {
       if (updates.company_name !== undefined) userUpdates.company_name = updates.company_name;
       if (updates.telephone_number !== undefined) userUpdates.phone = updates.telephone_number;
       if (updates.postcode !== undefined) userUpdates.company_postcode = updates.postcode;
-      // These fields don't exist in the users table yet
-      // if (updates.service_radius !== undefined) userUpdates.service_radius = updates.service_radius;
-      // if (updates.share_location !== undefined) userUpdates.share_location = updates.share_location;
       
       console.log('Updating user profile:', userUpdates);
-      const { data: updatedUser, error: updateError } = await supabaseClient
+      const { error: updateError } = await supabase
         .from('users')
         .update(userUpdates)
-        .eq('user_id', clerkUser.id)
-        .select()
-        .single();
-
+        .eq('user_id', user.id);
+      
       if (updateError) {
         console.error('User profile update error:', updateError);
         throw updateError;
+      }
+      
+      // Fetch the updated user
+      const { data: updatedUsers } = await supabase
+        .from('users')
+        .select('*')
+        .filter('user_id', 'eq', user.id);
+        
+      const updatedUser = updatedUsers && updatedUsers.length > 0 ? updatedUsers[0] : null;
+
+      if (!updatedUser) {
+        throw new Error('Failed to retrieve updated user profile');
       }
 
       console.log('User profile updated:', updatedUser);
@@ -236,25 +206,17 @@ export function useProfile() {
   };
 
   useEffect(() => {
-    console.log('useEffect triggered with:', { isSignedIn, userId: (user as ClerkUser | null)?.id });
-    loadProfile();
-  }, [user, isSignedIn]);
+    if (isLoaded) {
+      console.log('useEffect triggered with:', { isSignedIn, userId: user?.id });
+      loadProfile();
+    }
+  }, [user, isSignedIn, isLoaded]);
 
   return {
     profile,
     loading,
     error,
     updateProfile,
-    isInitialized: !loading,
-    testAuth: async () => {
-      try {
-        const { data: debugData } = await supabaseClient.rpc('debug_auth_state');
-        console.log('testAuth result:', debugData);
-        return debugData;
-      } catch (err) {
-        console.error('Auth test failed:', err);
-        return null;
-      }
-    }
+    isInitialized: !loading
   };
 }

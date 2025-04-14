@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useProfile } from "../../../hooks/useProfile";
+import { useSupabaseProfile } from "../../../hooks/useSupabaseProfile";
 import { toast } from "sonner";
 import { Loader2, Clock, Calendar, Check, X } from "lucide-react";
 
@@ -31,7 +31,7 @@ interface WorkingHours {
 }
 
 export default function WorkingHoursTab() {
-  const { loading } = useProfile();
+  const { loading } = useSupabaseProfile();
   const [workingHours, setWorkingHours] = useState<WorkingHours>({});
   const [saving, setSaving] = useState(false);
 

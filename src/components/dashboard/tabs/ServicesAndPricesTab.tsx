@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useProfile } from "../../../hooks/useProfile";
+import { useSupabaseProfile } from "../../../hooks/useSupabaseProfile";
 import { PoundSterling, Loader2, Package, Info, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -22,7 +22,7 @@ interface Service {
 }
 
 export default function ServicesAndPricesTab() {
-  const { loading } = useProfile();
+  const { loading } = useSupabaseProfile();
   const [services, setServices] = useState<Service[]>(
     DEFAULT_SERVICES.map(s => ({ ...s, is_offered: true }))
   );

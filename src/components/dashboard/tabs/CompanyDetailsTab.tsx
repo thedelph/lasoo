@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useProfile } from '../../../hooks/useProfile';
+import { useSupabaseProfile } from '../../../hooks/useSupabaseProfile';
 import { Loader2, Building, Phone, Globe, MapPin } from 'lucide-react';
 import type { Profile } from '../../../types/profile';
 
 export default function CompanyDetailsTab() {
-  const { profile, loading, updateProfile } = useProfile();
+  const { profile, loading, updateProfile } = useSupabaseProfile();
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<Partial<Profile>>({
     company_name: '',

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useProfile } from "../../../hooks/useProfile";
+import { useSupabaseProfile } from "../../../hooks/useSupabaseProfile";
 import { AlertCircle, MapPin, Loader2, Globe, Target, Navigation, Info } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ServiceAreaTab() {
-  const { profile, loading: profileLoading, updateProfile } = useProfile();
+  const { profile, loading: profileLoading, updateProfile } = useSupabaseProfile();
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     service_radius: 10,
@@ -54,7 +54,7 @@ export default function ServiceAreaTab() {
 
       const [longitude, latitude] = data.features[0].center;
 
-      // Use the updateProfile function from useProfile hook
+      // Use the updateProfile function from useSupabaseProfile hook
       await updateProfile({
         service_radius: formData.service_radius,
         share_location: formData.share_location,

@@ -27,10 +27,6 @@ function App() {
         <Route path="/locksmith/login" element={<Login />} />
         <Route path="/locksmith/register" element={<SignUp />} />
         
-        {/* Redirects for old Clerk auth routes */}
-        <Route path="/sign-in/*" element={<Login />} />
-        <Route path="/sign-up/*" element={<SignUp />} />
-        
         {/* Protected routes - now using Supabase protected route */}
         <Route
           path="/locksmith/dashboard/*"

@@ -33,7 +33,7 @@ export async function debugAuth() {
 
 export async function testConnection() {
   try {
-    const { error } = await supabase.from('profiles').select('count');
+    const { error } = await supabase.from('users').select('count');
     return !error;
   } catch {
     return false;

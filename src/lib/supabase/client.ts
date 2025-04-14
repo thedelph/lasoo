@@ -13,11 +13,6 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'locksmith-finder'
-    }
   }
 });
 
@@ -31,7 +26,6 @@ export const createSupabaseWithAuth = (authToken: string) => {
     },
     global: {
       headers: {
-        'X-Client-Info': 'locksmith-finder',
         'Authorization': `Bearer ${authToken}`
       }
     }

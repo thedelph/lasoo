@@ -1,17 +1,17 @@
 # Lasoo
 
-A locksmith finder application built with React, Vite, Clerk, and Supabase.
+A locksmith finder application built with React, Vite, and Supabase.
 
 ## Overview
 
-Lasoo is a web application that helps users find and connect with locksmiths. The application uses Clerk for authentication and Supabase as the backend database, with Row Level Security (RLS) policies to ensure data privacy and security.
+Lasoo is a web application that helps users find and connect with locksmiths. The application uses Supabase for both authentication and database, with Row Level Security (RLS) policies to ensure data privacy and security.
 
 ## Tech Stack
 
 - **Frontend**: React with TypeScript, built using Vite
-- **Authentication**: Clerk
+- **Authentication**: Supabase Auth
 - **Database**: Supabase
-- **Styling**: Tailwind CSS with custom UI components
+- **Styling**: Tailwind CSS with Shadcn/UI components
 - **Mapping**: Mapbox GL
 - **Deployment**: Vercel
 
@@ -21,7 +21,6 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
 
 - Node.js 18 or higher
 - npm or yarn
-- Clerk account
 - Supabase account
 
 ### Installation
@@ -39,7 +38,6 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
 
 3. Create a `.env` file in the root directory with the following variables:
    ```
-   VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    VITE_MAPBOX_ACCESS_TOKEN=your_mapbox_access_token
@@ -52,6 +50,8 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
 
 ## Recent Updates
 
+- **Authentication UI Update**: Implemented Shadcn/UI components for login and registration pages with improved user experience
+- **Authentication Migration**: Migrated from Clerk to Supabase Auth for a unified authentication system across web and mobile platforms
 - **Admin Panel Routing Fix**: Updated admin dashboard route to use wildcard pattern (`/admin/dashboard/*`) for proper nested route handling in production
 - **Build Optimization**: Fixed TypeScript errors to ensure successful production builds
 - **Dashboard UI Enhancement**: Completely redesigned the locksmith dashboard with a modern, card-based layout and improved user experience
@@ -68,7 +68,8 @@ The application is configured for deployment on Vercel. See the [Deployment Guid
 
 - [Dashboard UI Guide](./docs/dashboard-ui-guide.md)
 - [UI Navigation Guide](./docs/ui-navigation-guide.md)
-- [Supabase-Clerk Integration](./docs/supabase-clerk-integration.md)
+- [UI Components Guide](./docs/ui-components-guide.md)
+- [Auth Migration Guide](./docs/auth-migration-guide.md)
 - [Troubleshooting Guide](./docs/troubleshooting-guide.md)
 - [Deployment Guide](./docs/deployment-guide.md)
 
@@ -95,7 +96,7 @@ lasoo/
 
 ## Key Features
 
-- User authentication with Clerk
+- User authentication with Supabase Auth
 - Integration with Supabase for data storage
 - Row Level Security (RLS) policies for data privacy
 - Locksmith profile management with intuitive dashboard
