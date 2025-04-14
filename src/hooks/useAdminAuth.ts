@@ -10,7 +10,8 @@ export interface AdminUser {
   updated_at: string;
 }
 
-// Check admin status from the admin_users table
+// List of admin emails that can access the admin dashboard
+const ADMIN_EMAILS = ['chrishide87@gmail.com', 'ant.mad@gmail.com'];
 
 export function useAdminAuth() {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
@@ -28,33 +29,26 @@ export function useAdminAuth() {
       // First check if the user is authenticated with Supabase
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
+      if (!user || !user.email) {
         setAdminUser(null);
         return;
       }
       
-      // Check if the user is in the admin_users table
-      const { data: adminData, error: adminError } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('email', user.email)
-        .single();
-      
-      if (adminError || !adminData) {
+      // Check if the user's email is in the allowed admin emails list
+      if (ADMIN_EMAILS.includes(user.email)) {
+        // Create an admin user object
+        const adminUser: AdminUser = {
+          id: user.id,
+          email: user.email,
+          is_super_admin: true,
+          created_at: user.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        setAdminUser(adminUser);
+      } else {
         setAdminUser(null);
-        return;
       }
-      
-      // Create an admin user object
-      const adminUser: AdminUser = {
-        id: adminData.id,
-        email: adminData.email,
-        is_super_admin: adminData.is_super_admin,
-        created_at: adminData.created_at,
-        updated_at: adminData.updated_at
-      };
-      
-      setAdminUser(adminUser);
     } catch (error) {
       console.error('Error checking admin status:', error);
       toast.error('Failed to verify admin credentials');
@@ -68,6 +62,11 @@ export function useAdminAuth() {
     try {
       setLoading(true);
       
+      // Check if the email is in the allowed admin emails list
+      if (!ADMIN_EMAILS.includes(email)) {
+        throw new Error('Not authorized as admin');
+      }
+      
       // Sign in with Supabase auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -76,24 +75,13 @@ export function useAdminAuth() {
       
       if (error) throw error;
       
-      // Check if the user is in the admin_users table
-      const { data: adminData, error: adminError } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('email', email)
-        .single();
-      
-      if (adminError || !adminData) {
-        throw new Error('Not authorized as admin');
-      }
-      
       // Create an admin user object
       const adminUser: AdminUser = {
-        id: adminData.id,
-        email: adminData.email,
-        is_super_admin: adminData.is_super_admin,
-        created_at: adminData.created_at,
-        updated_at: adminData.updated_at
+        id: data.user.id,
+        email: data.user.email!,
+        is_super_admin: true,
+        created_at: data.user.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       
       setAdminUser(adminUser);

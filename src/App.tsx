@@ -12,7 +12,6 @@ import AdminDashboard from './components/admin/AdminDashboard';
 import DashboardOverview from './components/admin/DashboardOverview';
 import GodModeMap from './components/admin/GodModeMap';
 import SubscriptionManagement from './components/admin/SubscriptionManagement';
-import UserManagement from './components/admin/UserManagement';
 import TradespeopleManagement from './components/admin/TradespeopleManagement';
 
 function App() {
@@ -55,7 +54,6 @@ function App() {
           </AdminProtectedRoute>
         }>
           <Route index element={<DashboardOverview />} />
-          <Route path="users" element={<UserManagement />} />
           <Route path="tradespeople" element={<TradespeopleManagement />} />
           <Route path="map" element={<GodModeMap />} />
           <Route path="subscriptions" element={<SubscriptionManagement />} />

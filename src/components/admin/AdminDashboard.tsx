@@ -41,7 +41,7 @@ const AdminDashboard = () => {
           <Link
             to="/admin/dashboard"
             className={`px-4 py-2 rounded-md ${
-              isActive('/admin/dashboard') && !isActive('/admin/dashboard/users') && !isActive('/admin/dashboard/tradespeople') && !isActive('/admin/dashboard/subscriptions') && !isActive('/admin/dashboard/map')
+              isActive('/admin/dashboard') && !isActive('/admin/dashboard/tradespeople') && !isActive('/admin/dashboard/subscriptions') && !isActive('/admin/dashboard/map')
                 ? 'bg-indigo-900 text-white'
                 : 'hover:bg-indigo-700'
             }`}
@@ -54,21 +54,7 @@ const AdminDashboard = () => {
             </div>
           </Link>
           
-          <Link
-            to="/admin/dashboard/users"
-            className={`px-4 py-2 rounded-md ${
-              isActive('/admin/dashboard/users')
-                ? 'bg-indigo-900 text-white'
-                : 'hover:bg-indigo-700'
-            }`}
-          >
-            <div className="flex items-center space-x-2">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              <span>Users</span>
-            </div>
-          </Link>
+
           
           <Link
             to="/admin/dashboard/tradespeople"
@@ -156,7 +142,6 @@ const AdminDashboard = () => {
             </button>
             <h1 className="text-xl font-semibold text-gray-800">
               {location.pathname === '/admin/dashboard' && 'Dashboard Overview'}
-              {location.pathname === '/admin/dashboard/users' && 'User Management'}
               {location.pathname === '/admin/dashboard/tradespeople' && 'Tradesperson Management'}
               {location.pathname === '/admin/dashboard/subscriptions' && 'Subscription Management'}
               {location.pathname === '/admin/dashboard/map' && 'God Mode Map'}
