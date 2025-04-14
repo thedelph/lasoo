@@ -11,10 +11,16 @@ export default function LandingPage() {
   const navigate = useNavigate()
   const [postcode, setPostcode] = useState('')
 
-  const handleSearch = (e: FormEvent) => {
+  const handleSearch = (e: FormEvent, serviceType: string) => {
     e.preventDefault()
     if (postcode.trim()) {
-      navigate(`/find?postcode=${encodeURIComponent(postcode.trim())}`)
+      // Set a flag in sessionStorage to ensure the search runs on the next page
+      sessionStorage.setItem('lasoo_search_trigger', 'true');
+      sessionStorage.setItem('lasoo_search_postcode', postcode.trim());
+      sessionStorage.setItem('lasoo_search_service', serviceType);
+      
+      // Navigate to the search page with postcode and serviceType parameters
+      navigate(`/find?postcode=${encodeURIComponent(postcode.trim())}&serviceType=${serviceType}&autoSearch=true`)
     }
   }
 

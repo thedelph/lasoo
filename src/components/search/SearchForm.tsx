@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Home, Car, Menu, X } from 'lucide-react';
+import { Home, Car, Menu, X } from 'lucide-react';
 
 interface SearchFormProps {
   postcode: string;
@@ -18,7 +18,8 @@ export default function SearchForm({
   onServiceChange,
   onSubmit,
 }: SearchFormProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  // Default to collapsed state on mobile since postcode is pre-filled from landing page
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <>
@@ -53,7 +54,7 @@ export default function SearchForm({
               </button>
             </div>
 
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form className="space-y-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Enter your Postcode
@@ -69,44 +70,52 @@ export default function SearchForm({
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Service Type
+                  Search For
                 </label>
-                <div className="flex w-full">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
-                    className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-l-md border ${
-                      service === 'home' 
-                        ? 'bg-blue-600 text-white border-blue-600' 
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    } flex-1`}
-                    onClick={() => onServiceChange('home')}
+                    className={`flex-1 flex items-center justify-center px-4 py-2 border-2 border-blue-500 text-sm font-medium rounded-md shadow-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                      searching ? 'opacity-75' : ''
+                    }`}
+                    disabled={searching}
+                    onClick={(e) => {
+                      onServiceChange('vehicle');
+                      onSubmit(e);
+                    }}
                   >
-                    <Home className="w-4 h-4 mr-2" /> Home
+                    {searching && service === 'vehicle' ? (
+                      'Searching...'
+                    ) : (
+                      <>
+                        <Car className="mr-2 h-5 w-5 flex-shrink-0" />
+                        <span>View Vehicle Locksmiths</span>
+                      </>
+                    )}
                   </button>
+                  
                   <button
                     type="button"
-                    className={`flex items-center justify-center px-3 py-2 text-sm font-medium rounded-r-md border ${
-                      service === 'car' 
-                        ? 'bg-blue-600 text-white border-blue-600' 
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    } flex-1`}
-                    onClick={() => onServiceChange('car')}
+                    className={`flex-1 flex items-center justify-center px-4 py-2 border-2 border-green-500 text-sm font-medium rounded-md shadow-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${
+                      searching ? 'opacity-75' : ''
+                    }`}
+                    disabled={searching}
+                    onClick={(e) => {
+                      onServiceChange('home');
+                      onSubmit(e);
+                    }}
                   >
-                    <Car className="w-4 h-4 mr-2" /> Vehicle
+                    {searching && service === 'home' ? (
+                      'Searching...'
+                    ) : (
+                      <>
+                        <Home className="mr-2 h-5 w-5 flex-shrink-0" />
+                        <span>View Home Locksmiths</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
-
-              <button
-                type="submit"
-                className={`w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                  searching ? 'opacity-75' : ''
-                }`}
-                disabled={searching}
-              >
-                {!searching && <Search className="w-4 h-4 mr-2" />}
-                {searching ? 'Searching...' : 'Find Locksmiths'}
-              </button>
             </form>
           </div>
         </div>

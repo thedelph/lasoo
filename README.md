@@ -50,6 +50,8 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
 
 ## Recent Updates
 
+- **Enhanced Search Experience**: Replaced generic search button with specialized "View Vehicle Locksmiths" and "View Home Locksmiths" buttons, adding clear icon indicators and automatic search execution from landing page
+- **Improved Mobile Interface**: Optimized the search form on mobile devices to stay collapsed by default when arriving from the landing page, showing search results immediately without extra clicks
 - **Profile Management Enhancement**: Fixed duplicate user entries issue and implemented robust form submission handling to prevent race conditions
 - **Database Optimization**: Added unique constraints and indexes to the users table for improved data integrity and query performance
 - **Geocoding Integration**: Enhanced postcode validation and geocoding for service area management with proper error handling
@@ -110,6 +112,9 @@ lasoo/
 - Working hours and services management
 - Responsive design with Tailwind CSS
 - Smooth section navigation on landing page
+- Specialized search filters for vehicle and home locksmith services
+- Auto-search functionality triggered directly from landing page
+- Mobile-optimized search experience
 - Admin panel with dashboard, user management, and analytics
 - God Mode Map for administrators to view all service providers
 

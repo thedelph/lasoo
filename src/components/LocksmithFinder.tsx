@@ -19,15 +19,26 @@ const INITIAL_VIEW = {
   zoom: 5
 }
 
-export default function LocksmithFinder() {
+interface LocksmithFinderProps {
+  initialPostcode?: string;
+  initialServiceType?: string;
+  autoSearch?: boolean;
+}
+
+export default function LocksmithFinder({
+  initialPostcode = '',
+  initialServiceType = 'home',
+  autoSearch = false
+}: LocksmithFinderProps) {
   const mapRef = useRef<MapRef>(null)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { mapboxToken } = useMapbox()
   const { findNearby, loading: searching } = useLocksmiths()
   
-  const [postcode, setPostcode] = useState(searchParams.get('postcode') || "")
-  const [service, setService] = useState("home")
+  // Use props first, fall back to URL params
+  const [postcode, setPostcode] = useState(initialPostcode || searchParams.get('postcode') || "")
+  const [service, setService] = useState(initialServiceType || searchParams.get('serviceType') || "home")
   const [availableLocksmiths, setAvailableLocksmiths] = useState<Locksmith[]>([])
   const [selectedLocksmith, setSelectedLocksmith] = useState<Locksmith | null>(null)
   const [viewport, setViewport] = useState(INITIAL_VIEW)
@@ -74,6 +85,7 @@ export default function LocksmithFinder() {
   };
 
   const handleSearch = async (searchPostcode: string) => {
+    console.log('handleSearch called with:', searchPostcode, 'service:', service);
     if (!searchPostcode.trim() || !mapboxToken) return;
 
     setGeocoding(true);
@@ -126,7 +138,7 @@ export default function LocksmithFinder() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (postcode.trim()) {
-      navigate(`/find?postcode=${encodeURIComponent(postcode.trim())}`);
+      navigate(`/find?postcode=${encodeURIComponent(postcode.trim())}&serviceType=${service}`);
       handleSearch(postcode.trim());
     }
   };
@@ -176,12 +188,20 @@ export default function LocksmithFinder() {
     }
   };
 
+  // Simple direct auto-search effect - with proper dependencies
   useEffect(() => {
-    const initialPostcode = searchParams.get('postcode');
-    if (initialPostcode && !hasSearched) {
-      handleSearch(initialPostcode);
+    // Only run if we actually have the data and haven't searched yet
+    if (autoSearch && postcode && !hasSearched) {
+      console.log('Direct auto-search triggered with:', postcode, service);
+      
+      // Immediate timeout to break execution context but still run quickly
+      const timer = setTimeout(() => {
+        handleSearch(postcode);
+      }, 10); // Much shorter delay for responsiveness
+      
+      return () => clearTimeout(timer);
     }
-  }, [searchParams, hasSearched]);
+  }, [autoSearch, postcode, service, hasSearched]); // Include all dependencies
 
   return (
     <div className="relative w-full h-screen">

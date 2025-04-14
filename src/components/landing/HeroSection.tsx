@@ -1,6 +1,6 @@
 "use client"
 
-import { Search } from "lucide-react"
+import { Car, Home } from "lucide-react"
 import { type FormEvent, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,7 @@ import { motion } from "framer-motion"
 interface HeroSectionProps {
   postcode: string
   onPostcodeChange: (value: string) => void
-  onSubmit: (e: FormEvent) => void
+  onSubmit: (e: FormEvent, serviceType: string) => void
 }
 
 export default function HeroSection({ postcode, onPostcodeChange, onSubmit }: HeroSectionProps) {
@@ -61,23 +61,41 @@ export default function HeroSection({ postcode, onPostcodeChange, onSubmit }: He
             24/7.
           </p>
 
-          <form onSubmit={onSubmit} className="mx-auto mb-8 max-w-md">
-            <div className="flex w-full overflow-hidden rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+          <form className="mx-auto mb-8 max-w-xl px-4 sm:px-0">
+            <div className="flex w-full overflow-hidden rounded-lg shadow-lg border-2 border-gray-300">
+              <div className="flex-1 flex items-center bg-white rounded-lg px-4 py-2">
               <Input
-                className="flex-1 rounded-none rounded-l-lg border-0 bg-white px-4 py-6 text-base focus-visible:ring-2 focus-visible:ring-primary"
+                className="w-full border-0 bg-transparent py-3 text-base focus-visible:ring-0 focus-visible:outline-none"
                 placeholder="Enter your postcode"
                 type="text"
                 value={postcode}
                 onChange={(e) => onPostcodeChange(e.target.value)}
                 required
               />
+              </div>
+            </div>
+            <div className="mt-5 flex w-full flex-col sm:flex-row gap-4">
               <Button
-                type="submit"
-                className="rounded-none rounded-r-lg bg-primary px-6 py-6 text-base font-medium text-primary-foreground hover:bg-primary/90"
+                type="button"
+                className="flex-1 bg-blue-600 py-3 text-base font-medium text-white hover:bg-blue-700 transition-colors rounded-lg shadow-lg border-2 border-blue-500"
                 size="lg"
+                onClick={(e) => onSubmit(e as unknown as FormEvent, "vehicle")}
               >
-                <Search className="mr-2 h-5 w-5" />
-                Find Now
+                <div className="flex items-center justify-center w-full">
+                  <Car className="mr-2 h-6 w-6 flex-shrink-0" />
+                  <span>View Vehicle Locksmiths</span>
+                </div>
+              </Button>
+              <Button
+                type="button"
+                className="flex-1 bg-green-600 py-3 text-base font-medium text-white hover:bg-green-700 transition-colors rounded-lg shadow-lg border-2 border-green-500"
+                size="lg"
+                onClick={(e) => onSubmit(e as unknown as FormEvent, "home")}
+              >
+                <div className="flex items-center justify-center w-full">
+                  <Home className="mr-2 h-6 w-6 flex-shrink-0" />
+                  <span>View Home Locksmiths</span>
+                </div>
               </Button>
             </div>
           </form>
