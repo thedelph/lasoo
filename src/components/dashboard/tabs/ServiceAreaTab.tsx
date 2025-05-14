@@ -16,6 +16,7 @@ export default function ServiceAreaTab() {
     longitude: null as number | null
   });
   const [postcodeError, setPostcodeError] = useState("");
+  const [geocodingAttempted, setGeocodingAttempted] = useState(false);
 
   // Function to geocode a postcode and get coordinates
   const geocodePostcode = async (postcode: string) => {
