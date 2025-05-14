@@ -287,9 +287,9 @@ export default function Footer() {
             <a className="text-sm text-slate-500 hover:text-primary hover:underline" href="#features">
               Terms of Service
             </a>
-            <a className="text-sm text-slate-500 hover:text-primary hover:underline" href="#how-it-works">
+            <Link className="text-sm text-slate-500 hover:text-primary hover:underline" to="/privacy">
               Privacy Policy
-            </a>
+            </Link>
             <a className="text-sm text-slate-500 hover:text-primary hover:underline" href="#services">
               Cookie Policy
             </a>

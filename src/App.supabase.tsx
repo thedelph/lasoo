@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import LandingPage from './components/LandingPage';
 import FindPage from './components/FindPage';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import ProtectedRoute from './components/auth/ProtectedRoute'; // Updated import
 import LocksmithDashboard from './components/locksmith/SupabaseDashboard'; // Updated import
 import Login from './components/auth/Login'; // New Supabase auth component
@@ -22,6 +23,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/find" element={<FindPage />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         
         {/* Auth routes - now using Supabase components */}
         <Route path="/locksmith/login" element={<Login />} />
