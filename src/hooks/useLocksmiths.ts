@@ -28,6 +28,7 @@ interface UserRecord {
   email: string;           // Contact email address
   company_postcode: string; // HQ/business location postcode
   service_type: string;    // Type of service provided (e.g., "Locksmith")
+  service_radius?: number; // Service radius in kilometers
   location?: LocationRecord; // Optional joined location record
   // Added during processing:
   distance?: number;       // Calculated distance from search location
@@ -117,7 +118,7 @@ export function useLocksmiths() {
       const { data: users, error: usersError } = await supabase
         .from('users')
         .select(
-          'id, user_id, fullname, company_name, phone, email, company_postcode, service_type'
+          'id, user_id, fullname, company_name, phone, email, company_postcode, service_type, service_radius'
         )
         .eq('is_authorized', 1)
         .eq('is_activated', 1);
@@ -269,9 +270,13 @@ export function useLocksmiths() {
             measureLng
           );
 
-          // Check if the search location is within the service radius
-          const inRange = distance <= radiusKm;
-          console.log(`${user.company_name}: Distance=${distance.toFixed(2)}km from ${hqCoords ? 'HQ' : 'current'} location, Radius=${radiusKm}km - ${inRange ? 'IN RANGE' : 'OUT OF RANGE'}`);
+          // Get the user's actual service radius, not the default search radius
+          const serviceRadius = user.service_radius || radiusKm;
+          
+          // Check if the search location is within the locksmith's service radius
+          const inRange = distance <= serviceRadius;
+          console.log(`${user.company_name}: Using locksmith's defined service radius: ${serviceRadius}km`);
+          console.log(`${user.company_name}: Distance=${distance.toFixed(2)}km from ${hqCoords ? 'HQ' : 'current'} location, Radius=${serviceRadius}km - ${inRange ? 'IN RANGE' : 'OUT OF RANGE'}`);
           
           return { user, inRange, distance, hqCoords };
         })
@@ -362,7 +367,8 @@ export function useLocksmiths() {
           distance: distance || 0,
           // Store HQ postcode for reference
           hqPostcode: user.company_postcode,
-          serviceRadius: radiusKm, // Default service radius
+          // Use the actual service radius from the database, not the default search radius
+          serviceRadius: user.service_radius || radiusKm,
           eta: Math.round((distance || 0) * 2 + 10)
         };
       });
