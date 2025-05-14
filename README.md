@@ -50,6 +50,11 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
 
 ## Recent Updates
 
+- **Service Radius Visualization**: Added an interactive feature that displays the locksmith's actual service coverage area on the map when selected
+- **HQ-Based Service Area**: Enhanced search algorithm to measure service radius from locksmith headquarters location, ensuring locksmiths aren't matched for jobs too far from their base
+- **Dual Location Display**: Improved map to always show both HQ location (home icon) and current location (navigation icon), giving users complete visibility
+- **Improved Locksmith Finder Algorithm**: Enhanced search to display both current and HQ locations when a locksmith is selected, while calculating service radius from HQ location
+- **Postcode Geocoding Cache**: Implemented a database cache for geocoded postcodes to improve search reliability and reduce API dependency
 - **Enhanced Search Experience**: Replaced generic search button with specialized "View Vehicle Locksmiths" and "View Home Locksmiths" buttons, adding clear icon indicators and automatic search execution from landing page
 - **Improved Mobile Interface**: Optimized the search form on mobile devices to stay collapsed by default when arriving from the landing page, showing search results immediately without extra clicks
 - **Profile Management Enhancement**: Fixed duplicate user entries issue and implemented robust form submission handling to prevent race conditions
@@ -80,6 +85,7 @@ The application is configured for deployment on Vercel. See the [Deployment Guid
 - [Deployment Guide](./docs/deployment-guide.md)
 - [Database Schema Guide](./docs/database-schema-guide.md)
 - [Profile Management Guide](./docs/profile-management-guide.md)
+- [Locksmith Finder Guide](./docs/locksmith-finder-guide.md)
 
 ## Project Structure
 
@@ -112,9 +118,10 @@ lasoo/
 - Working hours and services management
 - Responsive design with Tailwind CSS
 - Smooth section navigation on landing page
-- Specialized search filters for vehicle and home locksmith services
-- Auto-search functionality triggered directly from landing page
-- Mobile-optimized search experience
+- **Specialized search filters for vehicle and home locksmith services**
+- **Comprehensive Location Search**: Shows locksmiths based on both their HQ location and current real-time position
+- **Auto-search functionality triggered directly from landing page**
+- **Mobile-optimized search experience**
 - Admin panel with dashboard, user management, and analytics
 - God Mode Map for administrators to view all service providers
 

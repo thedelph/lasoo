@@ -116,8 +116,8 @@ export default function LocksmithFinder({
       const searchLoc = { latitude, longitude };
       setSearchLocation(searchLoc);
 
-      // Find nearby locksmiths
-      const locksmiths = await findNearby(latitude, longitude, 25, service);
+      // Find nearby locksmiths with the 'either' mode to check both HQ and current locations
+      const locksmiths = await findNearby(latitude, longitude, 25, service, 'either');
       setAvailableLocksmiths(locksmiths);
       
       // Fit map to include search location and any results
@@ -211,6 +211,7 @@ export default function LocksmithFinder({
         onMove={evt => setViewport(evt.viewState)}
         hasSearched={hasSearched}
         availableLocksmiths={availableLocksmiths}
+        selectedLocksmith={selectedLocksmith}
         onMarkerClick={handleMarkerClick}
         searchLocation={searchLocation}
       />

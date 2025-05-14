@@ -238,8 +238,27 @@ export function useLocksmiths() {
           
           // If we don't have valid measurement coordinates, this locksmith can't be included
           if (measureLat === null || measureLng === null) {
-            console.log(`${user.company_name}: No valid coordinates for distance calculation`);
-            return { user, inRange: false, distance: null, hqCoords: null };
+            // Use the user's actual service radius for display, falling back to radiusKm if needed
+            const serviceRadius = user.service_radius || radiusKm;
+            
+            let distance: number | null = null;
+            let inRange = false;
+            
+            // Calculate distance from search point to HQ location
+            const hqLocation = await geocodePostcode(user.company_postcode, mapboxToken);
+            const hqDistance = calculateDistance(
+              latitude,
+              longitude,
+              hqLocation.latitude,
+              hqLocation.longitude
+            );
+            
+            // IMPORTANT: For a locksmith to be included, their HQ must be within service radius
+            // This follows the principle that service radius is measured from HQ
+            inRange = hqDistance <= serviceRadius;
+            console.log(`${user.company_name}: Distance=${hqDistance.toFixed(2)}km from HQ location, Radius=${serviceRadius}km - ${inRange ? 'IN RANGE' : 'OUT OF RANGE'}`);
+            
+            return { user, inRange, distance, hqCoords: hqLocation };
           }
           
           // Calculate distance from search location to measurement point (HQ if available, otherwise current)
@@ -282,6 +301,33 @@ export function useLocksmiths() {
           locations.push(currentLocation);
         }
         
+        // ALWAYS add company postcode as HQ location if available
+        // This ensures we show the HQ location on the map as required
+        if (user.company_postcode) {
+          try {
+            const geocoded = await geocodePostcode(user.company_postcode, mapboxToken);
+            
+            if (geocoded) {
+              // Check if this location is already in the array (to avoid duplicates)
+              const hqExists = locations.some(
+                loc => 
+                  Math.abs(parseFloat(loc.latitude) - parseFloat(geocoded.latitude)) < 0.0001 && 
+                  Math.abs(parseFloat(loc.longitude) - parseFloat(geocoded.longitude)) < 0.0001
+              );
+              
+              if (!hqExists) {
+                locations.push({
+                  latitude: geocoded.latitude,
+                  longitude: geocoded.longitude,
+                  isCurrentLocation: false // Company postcode is HQ, not current
+                });
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to geocode company postcode for ${user.company_name}:`, error);
+          }
+        }
+        
         // We already have the distance calculated from HQ or current location
         const distance = user.distance || 0;
         
@@ -294,39 +340,6 @@ export function useLocksmiths() {
             isCurrentLocation: false // This is HQ, not current location
           });
           console.log(`Using pre-calculated HQ location for ${user.company_name}`);
-        }
-        // Otherwise try to geocode it again if needed
-        else if (user.company_postcode) {
-          try {
-            const hqCoords = await geocodePostcode(user.company_postcode, mapboxToken);
-            
-            if (hqCoords) {
-              // Check if HQ location is different from current location (if it exists)
-              let isDifferentLocation = true;
-              
-              // Only compare if we have a current location
-              if (user.location) {
-                const currentLat = Number(user.location.latitude);
-                const currentLng = Number(user.location.longitude);
-                
-                isDifferentLocation = 
-                  Math.abs(hqCoords.latitude - currentLat) > 0.001 || 
-                  Math.abs(hqCoords.longitude - currentLng) > 0.001;
-              }
-              
-              if (isDifferentLocation) {
-                // Add HQ location
-                locations.push({
-                  latitude: hqCoords.latitude,
-                  longitude: hqCoords.longitude,
-                  isCurrentLocation: false // This is HQ, not current location
-                });
-                console.log(`Added HQ location for ${user.company_name}: ${hqCoords.latitude}, ${hqCoords.longitude}`);
-              }
-            }
-          } catch (error) {
-            console.error(`Failed to geocode HQ for ${user.company_name}:`, error);
-          }
         }
         
         // If we have no locations at all, use HQ coordinates as primary

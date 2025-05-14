@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useState } from 'react'
-import Map, { Marker, MapRef } from 'react-map-gl'
+import Map, { Marker, MapRef, Source, Layer } from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { AlertCircle, MapPin, Home, Navigation } from 'lucide-react'
 import type { Locksmith } from '../../types/locksmith'
@@ -30,6 +30,8 @@ interface MapViewProps {
   searchLocation: { latitude: number; longitude: number } | null
   /** List of locksmith/tradesperson results within the search radius */
   availableLocksmiths: Locksmith[]
+  /** Currently selected locksmith */
+  selectedLocksmith?: Locksmith | null
   /** Callback when a locksmith marker is clicked */
   onMarkerClick: (locksmith: Locksmith) => void
 }
@@ -52,10 +54,36 @@ export default function MapView({
   hasSearched,
   searchLocation,
   availableLocksmiths,
+  selectedLocksmith,
   onMarkerClick
 }: MapViewProps) {
   const [error, setError] = useState<string | null>(null)
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
+  
+  // Create service radius GeoJSON for the selected locksmith
+  const serviceRadiusGeoJSON = React.useMemo(() => {
+    if (!selectedLocksmith) return null;
+    
+    // Find the HQ location for service radius calculation
+    const hqLocation = selectedLocksmith.locations?.find(loc => !loc.isCurrentLocation);
+    
+    // If no HQ location, we can't show service radius
+    if (!hqLocation) return null;
+    
+    // Service radius in kilometers
+    const radiusKm = selectedLocksmith.serviceRadius || 25;
+    
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [Number(hqLocation.longitude), Number(hqLocation.latitude)]
+      },
+      properties: {
+        radius: radiusKm * 1000 // Convert to meters for mapbox
+      }
+    };
+  }, [selectedLocksmith]);
 
   useEffect(() => {
     console.log('MapView update:', {
@@ -110,6 +138,40 @@ export default function MapView({
           </div>
         )}
 
+        {/* Service Radius Circle - Using a custom data-driven radius function */}
+        {serviceRadiusGeoJSON && (
+          <Source
+            id="service-radius"
+            type="geojson"
+            data={serviceRadiusGeoJSON as any}
+          >
+            <Layer
+              id="service-radius-fill"
+              type="circle"
+              paint={{
+                // Convert km to pixels using a zoom-based scale factor
+                // Radius is scaled based on zoom level so it appears correctly at all zoom levels
+                'circle-radius': [
+                  'interpolate',
+                  ['exponential', 2],
+                  ['zoom'],
+                  // At lower zoom levels, scale the circle down
+                  0, ['/', ['get', 'radius'], 50000], // Tiny at world view
+                  8, ['/', ['get', 'radius'], 800],   // Small at country view
+                  10, ['/', ['get', 'radius'], 150],  // Medium at city view
+                  13, ['/', ['get', 'radius'], 30],   // Larger at neighborhood view
+                  15, ['/', ['get', 'radius'], 8]     // Full size at street view
+                ],
+                'circle-color': '#4338ca', // indigo color
+                'circle-opacity': 0.15,
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#4338ca',
+                'circle-stroke-opacity': 0.3
+              }}
+            />
+          </Source>
+        )}
+
         {/* Search Location Pin */}
         {hasSearched && searchLocation && (
           <Marker
@@ -122,15 +184,17 @@ export default function MapView({
             </div>
           </Marker>
         )}
-        
-        {/* Locksmith/Tradesperson Markers */}
+                {/* Locksmith/Tradesperson Markers */}
         {hasSearched && availableLocksmiths.map((locksmith, index) => {
           console.log('Rendering locksmith:', {
             company: locksmith.companyName,
             locations: locksmith.locations.length
           });
           
-          // Render all locations for this locksmith (both current and HQ locations)
+          // Find HQ and current locations
+          const hqLocation = locksmith.locations.find(loc => !loc.isCurrentLocation);
+          const currentLocation = locksmith.locations.find(loc => loc.isCurrentLocation);
+          
           return (
             <React.Fragment key={locksmith.id}>
               {/* 
@@ -152,20 +216,52 @@ export default function MapView({
                 </button>
               </Marker>
               
-              {/* 
-                Additional location markers (Navigation icon or Home icon)
-                - Navigation icon = current location if different from primary
-                - Home icon = HQ location (from company postcode) if different from primary
-                
-                These give users visibility of both where the tradesperson is
-                currently located and where their business is headquartered.
-              */}
-              {locksmith.locations.map((location, locIdx) => {
-                // Skip the primary location as it's already shown
-                if (location.latitude === locksmith.latitude && 
-                    location.longitude === locksmith.longitude) {
-                  return null;
-                }
+              {/* ALWAYS show HQ location with home icon if available */}
+              {hqLocation && (
+                <Marker
+                  key={`${locksmith.id}-hq`}
+                  latitude={hqLocation.latitude}
+                  longitude={hqLocation.longitude}
+                  anchor="bottom"
+                >
+                  <div 
+                    className="cursor-pointer"
+                    onClick={() => onMarkerClick(locksmith)}
+                    title={`${locksmith.companyName} (Headquarters)`}
+                  >
+                    <Home className="h-5 w-5 text-indigo-600" />
+                  </div>
+                </Marker>
+              )}
+              
+              {/* ALWAYS show current location with navigation icon if available */}
+              {currentLocation && (
+                <Marker
+                  key={`${locksmith.id}-current`}
+                  latitude={currentLocation.latitude}
+                  longitude={currentLocation.longitude}
+                  anchor="bottom"
+                >
+                  <div 
+                    className="cursor-pointer"
+                    onClick={() => onMarkerClick(locksmith)}
+                    title={`${locksmith.companyName} (Current Location)`}
+                  >
+                    <Navigation className="h-5 w-5 text-blue-600" />
+                  </div>
+                </Marker>
+              )}
+              
+              {/* For backward compatibility, show any other locations not covered above */}
+              {locksmith.locations
+                .filter(loc => 
+                  // Not already shown as HQ or current location
+                  (hqLocation && loc.latitude === hqLocation.latitude && loc.longitude === hqLocation.longitude) === false &&
+                  (currentLocation && loc.latitude === currentLocation.latitude && loc.longitude === currentLocation.longitude) === false &&
+                  // Not the same as primary marker
+                  (loc.latitude === locksmith.latitude && loc.longitude === locksmith.longitude) === false
+                )
+                .map((location, locIdx) => {
                 
                 return (
                   <Marker

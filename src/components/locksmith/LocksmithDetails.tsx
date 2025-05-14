@@ -4,7 +4,7 @@
  * shown when a user clicks on a map marker or search result
  */
 
-import { Phone, Globe, Home, Car, ArrowLeft, Clock, MapPin, Navigation } from 'lucide-react'
+import { Phone, Globe, Home, Car, ArrowLeft, Navigation } from 'lucide-react'
 import type { Locksmith } from '../../types/locksmith'
 
 /**
@@ -48,31 +48,49 @@ export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetails
         <h2 className="text-2xl font-bold mb-2">
           {locksmith.companyName}
         </h2>
-        <div className="flex flex-col gap-1">
-          {/* 
-            Distance from search location to HQ
-            This shows how far the tradesperson's HQ (company postcode location) is from
-            the postcode the user searched for - this is what determines if they're in range
-          */}
-          <div className="flex items-center text-gray-500">
-            <Navigation className="w-4 h-4 mr-2" />
-            <span>
-              Distance: {typeof locksmith.distance === 'number' 
-                ? `${locksmith.distance.toFixed(1)} km from your location`
-                : 'Unknown'}
-            </span>
+
+        <div className="flex flex-col gap-2 mb-3">
+          {/* Location Information with icons */}
+          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <h3 className="font-medium mb-2">Location Information</h3>
+            
+            {/* Current Location - if the locksmith is sharing their current position */}
+            {locksmith.locations?.some(loc => loc.isCurrentLocation) && (
+              <div className="flex items-start mb-2">
+                <Navigation className="w-5 h-5 mr-2 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-medium">Current Location</div>
+                  <div className="text-gray-500 text-sm">
+                    {typeof locksmith.distance === 'number'
+                      ? `${locksmith.distance.toFixed(1)} km from your search location`
+                      : 'Distance unknown'}
+                  </div>
+                  {locksmith.eta !== undefined && (
+                    <div className="text-gray-500 text-sm">
+                      Estimated arrival time: {locksmith.eta} min
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* HQ Location - from the company postcode */}
+            {locksmith.hqPostcode && (
+              <div className="flex items-start">
+                <Home className="w-5 h-5 mr-2 text-indigo-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-medium">Headquarters</div>
+                  <div className="text-gray-500 text-sm">
+                    {locksmith.hqPostcode}
+                  </div>
+                  <div className="text-gray-500 text-sm">
+                    Service radius: {locksmith.serviceRadius} km
+                    <span className="text-xs italic ml-1">(measured from HQ location)</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          
-          {/* 
-            ETA (Estimated Time of Arrival)
-            Calculated based on the distance and an assumed average travel speed
-          */}
-          {locksmith.eta !== undefined && (
-            <div className="flex items-center text-gray-500">
-              <Clock className="w-4 h-4 mr-2" />
-              <span>ETA: {locksmith.eta} min</span>
-            </div>
-          )}
         </div>
       </div>
       
@@ -103,14 +121,7 @@ export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetails
           )}
         </div>
 
-        {/* 
-          Service Radius - how far the tradesperson is willing to travel from their HQ
-          This determines the coverage area for their services
-        */}
-        <div className="flex items-center text-gray-500">
-          <MapPin className="w-4 h-4 mr-2" />
-          <span>Service radius: {locksmith.serviceRadius}km</span>
-        </div>
+
 
         <div>
           <h3 className="font-bold mb-2">Services Offered:</h3>
