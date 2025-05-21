@@ -128,18 +128,87 @@ Interface for viewing and managing tradespeople.
 **Usage:**
 - Rendered at the `/admin/tradespeople` route
 
-### SubscriptionManagement.tsx
+### Subscription Management Components
 
-Interface for viewing and managing subscriptions.
+The subscription management functionality has been modularized into several components for better maintainability and organization.
+
+#### SubscriptionManagement.tsx
+
+Main container component that orchestrates the subscription management interface.
 
 **Key Features:**
-- Subscription listing with pagination
-- Search and filtering by status
-- Subscription extension actions
-- Subscription cancellation actions
+- Integrates all subscription sub-components
+- Provides the main entry point for the subscription management system
 
 **Usage:**
 - Rendered at the `/admin/subscriptions` route
+
+#### SubscriptionList.tsx
+
+Component for displaying and filtering subscription data.
+
+**Key Features:**
+- Subscription listing with search and filtering
+- Status filtering (Active, Expired, All)
+- Text search by name and email
+- Subscription action buttons (Extend, Cancel)
+- Subscription status badges with color coding
+
+**Implementation Details:**
+- Handles both real subscription records from the `subscriptions` table 
+- Also handles user-based subscription data from the `users` table
+- Displays consistent information regardless of the data source
+- Implements de-duplication to prevent showing the same subscription multiple times
+
+#### NewSubscriptionModal.tsx
+
+Modal component for creating new subscriptions.
+
+**Key Features:**
+- Tradesperson selection with search
+- Subscription plan selection
+- Form validation
+- Error handling
+- Loading states during submission
+
+**Implementation Details:**
+- Fetches tradespeople without existing subscriptions
+- Fetches available subscription plans
+- Creates new subscription records with proper user-subscription relationships
+
+#### SubscriptionService.ts
+
+Service class for handling subscription data operations.
+
+**Key Features:**
+- Centralized data fetching for all subscription components
+- Consistent error handling and data transformation
+- CRUD operations for subscriptions
+
+**Implementation Details:**
+- Handles hybrid subscription data from both `users` and `subscriptions` tables
+- Works with both synthetic user IDs ("user-X") and real subscription UUIDs
+- Handles subscription extensions, cancellations, and creations
+- Incorporates deduplication logic to avoid duplicate subscriptions
+
+#### types.ts
+
+Shared TypeScript interfaces for subscription management components.
+
+**Key Types:**
+- `Subscription`: Interface for subscription data
+- `TradespersonOption`: Interface for tradesperson selection options
+- `SubscriptionPlan`: Interface for subscription plan data
+
+#### utils.ts
+
+Utility functions for subscription management components.
+
+**Key Functions:**
+- `formatDate`: Formats dates consistently across components
+- `formatCurrency`: Formats currency values
+- `isSubscriptionExpired`: Checks if a subscription is expired
+- `getStatusBadgeClass`: Returns appropriate CSS classes for status badges
 
 ## Map Components
 
