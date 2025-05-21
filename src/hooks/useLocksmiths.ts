@@ -96,13 +96,15 @@ export function useLocksmiths() {
    * @param longitude - Longitude of the search location
    * @param radiusKm - Radius in kilometers to search within (default: 50km)
    * @param serviceType - Optional service type filter (e.g., "home")
+   * @param locationMode - Optional location mode filter (e.g., "current", "hq", "either")
    * @returns Promise resolving to array of Locksmith objects within the radius
    */
   const findNearby = async (
     latitude: number,
     longitude: number,
     radiusKm: number = 50,
-    serviceType?: string
+    serviceType?: string,
+    locationMode: 'current' | 'hq' | 'either' = 'either'
   ): Promise<Locksmith[]> => {
     setLoading(true);
     console.group('🔍 Locksmith Search');
@@ -111,7 +113,8 @@ export function useLocksmiths() {
       console.log('Search Parameters:', {
         searchLocation: { latitude, longitude },
         radiusKm,
-        serviceType: serviceType || 'any'
+        serviceType: serviceType || 'any',
+        locationMode
       });
 
       // Step 1: Query users table
@@ -250,8 +253,8 @@ export function useLocksmiths() {
             const hqDistance = calculateDistance(
               latitude,
               longitude,
-              hqLocation.latitude,
-              hqLocation.longitude
+              hqLocation?.latitude || 0,
+              hqLocation?.longitude || 0
             );
             
             // IMPORTANT: For a locksmith to be included, their HQ must be within service radius
@@ -316,8 +319,8 @@ export function useLocksmiths() {
               // Check if this location is already in the array (to avoid duplicates)
               const hqExists = locations.some(
                 loc => 
-                  Math.abs(parseFloat(loc.latitude) - parseFloat(geocoded.latitude)) < 0.0001 && 
-                  Math.abs(parseFloat(loc.longitude) - parseFloat(geocoded.longitude)) < 0.0001
+                  Math.abs(parseFloat(String(loc.latitude)) - parseFloat(String(geocoded.latitude))) < 0.0001 && 
+                  Math.abs(parseFloat(String(loc.longitude)) - parseFloat(String(geocoded.longitude))) < 0.0001
               );
               
               if (!hqExists) {
