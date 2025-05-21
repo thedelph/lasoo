@@ -120,6 +120,32 @@ WITH CHECK (true);
 
 **Important:** Always remove this policy before deploying to production!
 
+## Database Structure Changes
+
+### Metadata Column Migration
+
+**Issue:**
+As of May 2025, the `metadata` JSONB column from the `users` table has been moved to a dedicated `user_metadata` table. This might cause issues if code directly references the old column structure.
+
+**Symptoms:**
+- Missing profile information (address, website, etc.)
+- Errors when updating user profiles
+- Android app registration/login issues
+
+**Solutions:**
+1. Update any code that directly accesses the `metadata` column to use the new `user_metadata` table instead
+2. Use proper join syntax when querying user data:
+   ```typescript
+   const { data } = await supabase
+     .from('users')
+     .select(`
+       *,
+       user_metadata (id, website, address_line1, address_line2, city, county, country)
+     `)
+     .filter('user_id', 'eq', userId);
+   ```
+3. For more details, refer to the [Metadata Migration Guide](./metadata-migration-guide.md)
+
 ## Performance Considerations
 
 ### Multiple Supabase Client Instances
