@@ -6,9 +6,9 @@
 
 import React, { useEffect, useState, useRef } from 'react'
 import Map, { Marker, MapRef } from 'react-map-gl'
-// Used indirectly for map types
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import mapboxgl from 'mapbox-gl'
+// We need mapboxgl types but don't use the import directly
+// @ts-ignore - used for types
+import type mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { AlertCircle, MapPin } from 'lucide-react'
 import type { Locksmith } from '../../types/locksmith'

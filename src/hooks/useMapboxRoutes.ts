@@ -10,6 +10,8 @@ interface RoutePoint {
   latitude: number;
 }
 
+// For future use when implementing full route data
+// @ts-ignore - will be used in future route implementation
 interface RouteData {
   points: RoutePoint[];
   distance: number;

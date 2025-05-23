@@ -3,11 +3,15 @@ import React from 'react';
 interface VanIcon3DProps {
   className?: string;
   // direction is kept for backward compatibility but bearing is preferred
+  /* istanbul ignore next - kept for backward compatibility */
   direction?: 'north' | 'northeast' | 'east' | 'southeast' | 'south' | 'southwest' | 'west' | 'northwest';
   bearing?: number; // Exact bearing in degrees (0-360)
   // These props are kept for backwards compatibility but are no longer used for scaling
+  /* istanbul ignore next - kept for backward compatibility */
   zoom?: number; 
+  /* istanbul ignore next - kept for backward compatibility */
   minZoom?: number;
+  /* istanbul ignore next - kept for backward compatibility */
   maxZoom?: number;
 }
 
@@ -20,10 +24,14 @@ interface VanIcon3DProps {
  */
 const VanIcon3D: React.FC<VanIcon3DProps> = ({ 
   className = "h-24 w-24", 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   direction = 'east', // kept for backward compatibility
   bearing = 90, // Default to east if no bearing provided
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   zoom = 15, // Default zoom level (not used for scaling anymore)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   minZoom = 10, // Minimum zoom level (kept for compatibility)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   maxZoom = 18 // Maximum zoom level (kept for compatibility)
 }) => {
   // Always use the bearing directly - simplifies the logic
