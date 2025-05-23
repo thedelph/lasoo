@@ -39,6 +39,9 @@ Ensure the following environment variables are set in your Vercel project settin
    - `VITE_SUPABASE_URL`: Your Supabase project URL
    - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
 
+3. **Mapbox Variables**:
+   - `VITE_MAPBOX_ACCESS_TOKEN`: Your Mapbox access token for map functionality
+
 ## Deployment Process
 
 1. **Prepare Your Application**:
@@ -77,12 +80,50 @@ Ensure the following environment variables are set in your Vercel project settin
 2. Check that the Clerk JWT template is properly configured
 3. Test the authentication flow step by step to identify where it's failing
 
+## Vercel Analytics Integration
+
+The application has been integrated with Vercel Analytics to track user interactions and page views.
+
+### Setup Process
+
+1. **Package Installation**:
+   - The `@vercel/analytics` package has been installed using npm:
+     ```bash
+     npm i @vercel/analytics
+     ```
+
+2. **Component Integration**:
+   - The Analytics component has been added to the main entry file (`src/main.tsx`):
+     ```jsx
+     import { Analytics } from '@vercel/analytics/react'
+     
+     ReactDOM.createRoot(document.getElementById('root')!).render(
+       <React.StrictMode>
+         <App />
+         <Analytics />
+       </React.StrictMode>,
+     )
+     ```
+
+3. **Dashboard Configuration**:
+   - To view analytics data, you must enable Web Analytics in the Vercel dashboard:
+     - Go to the [Vercel dashboard](https://vercel.com/dashboard)
+     - Select your project
+     - Click the Analytics tab
+     - Click Enable from the dialog
+
+4. **Viewing Analytics Data**:
+   - After deployment and enabling Analytics, data will be collected automatically
+   - View the data in the Analytics tab of your Vercel dashboard
+   - Data includes page views, unique visitors, referral sources, and geographic information
+
 ## Best Practices
 
 1. **Version Control**: Keep your `vercel.json` file in version control to ensure consistent deployments
 2. **Environment Separation**: Use different Clerk and Supabase projects for development and production
 3. **Monitoring**: Set up monitoring for your production deployment to catch issues early
 4. **Progressive Rollout**: Consider using Vercel's preview deployments to test changes before deploying to production
+5. **Analytics Review**: Regularly review analytics data to understand user behavior and optimize the application
 
 ## Related Documentation
 

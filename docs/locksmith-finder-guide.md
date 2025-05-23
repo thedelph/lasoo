@@ -9,7 +9,8 @@ The locksmith finder is a core feature of Lasoo that allows users to search for 
 ## Key Features
 
 - **HQ-Based Service Area**: Search algorithm measures service radius from locksmith headquarters location
-- **Dual Location Display**: Shows both HQ location (home icon) and current location (navigation icon) on the map
+- **Dual Location Display**: Shows both HQ location (shop icon) and current location (van icon) on the map and in results
+- **Live Location Indicator**: Pulsing green "LIVE" tag for tradespeople actively sharing their current location
 - **Service Radius Visualization**: Displays the actual service coverage area when a locksmith is selected
 - **Cached Postcode Geocoding**: Utilizes a database cache of postcodes to improve reliability and reduce API dependency
 - **Service Type Filtering**: Filter locksmiths by service type (home or vehicle)
@@ -55,9 +56,17 @@ A key feature of the Locksmith Finder is the interactive service radius visualiz
 The map uses different marker styles to clearly indicate different location types:
 
 - **Numbered Markers**: Primary markers shown as blue circles with numbers (1, 2, 3...) representing each locksmith in the search results
-- **Home Icon**: Indigo-colored home icon showing the locksmith's headquarters/business address
-- **Navigation Icon**: Blue navigation icon showing the locksmith's current real-time location (if shared)
+- **Shop Icon**: 3D shop/building icon showing the locksmith's headquarters/business address
+- **Van Icon**: 3D van icon showing the locksmith's current real-time location (if shared)
 - **Search Location**: Large blue pin marking the searched postcode location
+
+### Live Location Indicators
+
+To help users quickly identify which tradespeople are actively sharing their real-time location:
+
+- **Pulsing LIVE Tag**: A green "LIVE" indicator with pulsing animation appears in the results list for tradespeople who are actively sharing their current location
+- **Right-Aligned Indicator**: The LIVE indicator is positioned on the right side of the results card for easy visibility
+- **Details View Indicator**: When viewing a tradesperson's details, the LIVE indicator appears next to their current location information
 
 ### Locksmith Details Panel
 
@@ -65,6 +74,8 @@ When a locksmith is selected, the details panel shows comprehensive information:
 
 - **Business Name**: The locksmith's company name
 - **Service Types**: What services they offer (home, vehicle, etc.)
+- **Location Type Icons**: Van icon for current location and shop icon for headquarters
+- **Live Status**: Pulsing green "LIVE" indicator for tradespeople sharing their current location
 - **HQ Location**: The postcode and address of their headquarters
 - **Current Location**: Their current location (if they're sharing it)
 - **Distance**: How far they are from the search location (measured to HQ)
@@ -109,8 +120,8 @@ The default behavior uses "Either Mode" to provide the most comprehensive search
 The map displays locksmiths with different markers based on the location type:
 
 - **Circle Markers**: Primary identifier with the locksmith's initial
-- **Navigation Markers**: Indicate a locksmith's current location if they are sharing it
-- **Building Markers**: Indicate a locksmith's HQ location based on their registered postcode
+- **Van Markers**: 3D van icons indicate a locksmith's current location if they are sharing it
+- **Shop Markers**: 3D shop/building icons indicate a locksmith's HQ location based on their registered postcode
 
 ## Service Type Filtering
 
@@ -123,10 +134,17 @@ Users can filter results by selecting:
 
 The locksmith finder has been enhanced with:
 
-1. **Improved Search Algorithm**: Now properly considers both HQ and current locations when searching
-2. **Geocoding Cache**: Added a database cache for geocoded postcodes to improve reliability
-3. **Fixed Postcode Coordinates**: Ensured accurate geocoding of postcodes for proper service area calculations
-4. **Distance Calculations**: Updated to accurately reflect distances from both current and HQ locations
+1. **Live Location Indicators**: Added pulsing green "LIVE" indicators to clearly show which tradespeople are actively sharing their current location
+2. **Enhanced Location Visualization**: Implemented van icons for current locations and shop icons for headquarters in both the results list and details view
+3. **Improved Search Algorithm**: Now properly considers both HQ and current locations when searching
+4. **Geocoding Cache**: Added a database cache for geocoded postcodes to improve reliability
+5. **Fixed Postcode Coordinates**: Ensured accurate geocoding of postcodes for proper service area calculations
+6. **Distance Calculations**: Updated to accurately reflect distances from both current and HQ locations
+7. **Mobile UI Enhancements**: Significant improvements to the mobile experience:
+   - Reduced results panel height (30% of viewport instead of 60%) for better map visibility
+   - Hidden scrollbars with visual fade indicators for cleaner UI
+   - Full-width, centered Call Now button for improved accessibility
+   - Adjusted map positioning to keep search pins visible above the results panel
 
 ## Troubleshooting
 

@@ -11,7 +11,8 @@ import { useLocksmiths } from '../hooks/useLocksmiths'
 import type { Locksmith } from '../types/locksmith'
 
 const DEFAULT_ZOOM = 12
-const PADDING = 50 // Padding in pixels around the bounds
+// Padding in pixels around the bounds - more at the bottom to account for results panel
+const PADDING = { top: 50, bottom: 200, left: 50, right: 50 }
 
 const INITIAL_VIEW = {
   latitude: 54.093409,
@@ -168,10 +169,12 @@ export default function LocksmithFinder({
     setSelectedLocksmith(locksmith);
     
     if (mapRef.current) {
+      // Add offset to center the marker higher on the screen to account for the results panel
       mapRef.current.flyTo({
         center: [locksmith.longitude, locksmith.latitude],
         zoom: 14,
-        duration: 2000
+        duration: 2000,
+        padding: { bottom: 200, top: 50, left: 50, right: 50 } // Add padding to keep marker visible
       });
     }
   };

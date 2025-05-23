@@ -10,7 +10,8 @@ This guide provides detailed instructions for using the Lasoo admin backend syst
 4. [Subscription Management](#subscription-management)
 5. [God Mode Map](#god-mode-map)
 6. [GDPR Compliance Monitoring](#gdpr-compliance-monitoring)
-7. [Troubleshooting](#troubleshooting)
+7. [Analytics and Reporting](#analytics-and-reporting)
+8. [Troubleshooting](#troubleshooting)
 
 ## Accessing the Admin Backend
 
@@ -109,6 +110,7 @@ The God Mode Map provides a real-time view of all tradespeople sharing their loc
 
 - **Real-time Location Tracking**: View all tradespeople currently sharing their location
 - **Dual Location Display**: See both current location and base location (from company postcode)
+- **Road-Snapping Technology**: Van icons are automatically snapped to the nearest road for accurate visualization
 - **Distance Calculation**: View the distance between a tradesperson's current location and their base
 - **Filtering Options**: Filter by active status and service type
 - **Detailed Information**: Click on map markers to view comprehensive tradesperson details
@@ -136,6 +138,10 @@ The God Mode Map provides a real-time view of all tradespeople sharing their loc
 - **Active vs. Inactive**: Active tradespeople (currently sharing location) have pulsing blue markers
 - **Distance from Base**: Helps understand how far tradespeople have traveled from their registered address
 - **Last Active Time**: Shows when the tradesperson's location was last updated
+- **Animated Van Icons on Roads**: Tradespeople sharing their live location appear as animated van icons positioned on the nearest road, providing a realistic representation of their travel routes
+  - The vans feature movement animations with slight wiggle and ground lines beneath the wheels
+  - These animations visually indicate active movement and make it easier to identify moving vehicles at a glance
+  - The van rotates automatically to match the bearing/direction of travel
 
 ## GDPR Compliance Monitoring
 
@@ -196,3 +202,36 @@ If data isn't loading properly:
 ### Support Contact
 
 For additional support, please contact the development team at support@lasoo.app
+
+## Analytics and Reporting
+
+The Lasoo platform has been integrated with Vercel Analytics to provide insights into user behavior and platform usage.
+
+### Accessing Analytics
+
+1. Log in to the [Vercel dashboard](https://vercel.com/dashboard)
+2. Select the Lasoo project
+3. Navigate to the Analytics tab
+4. Ensure Web Analytics is enabled (if not, click Enable)
+
+### Available Analytics Data
+
+- **Page Views**: Track which pages users visit most frequently
+- **Unique Visitors**: Monitor daily, weekly, and monthly unique visitors
+- **Referral Sources**: Identify where your traffic is coming from
+- **Geographic Data**: See which regions are using the platform
+- **Device Information**: Understand what devices users are accessing the platform with
+
+### Using Analytics for Business Decisions
+
+- **User Engagement**: Identify the most and least visited pages to optimize the user experience
+- **Growth Tracking**: Monitor user growth trends over time
+- **Marketing Effectiveness**: Evaluate which referral sources bring the most users
+- **Regional Targeting**: Use geographic data to focus marketing efforts
+
+### Privacy Considerations
+
+- Vercel Analytics is GDPR-compliant and privacy-focused
+- No personally identifiable information (PII) is collected
+- Data is anonymized and aggregated
+- Analytics respects user privacy preferences and do-not-track settings

@@ -1,5 +1,8 @@
 import { Clock } from 'lucide-react';
 import type { Locksmith } from '../../types/locksmith';
+import LiveIndicator from '../ui/LiveIndicator';
+import VanIcon3D from '../map/SimplifiedVanIcon3D';
+import ShopIcon3D from '../map/SimplifiedShopIcon3D';
 
 interface ResultsListProps {
   locksmiths: Locksmith[];
@@ -23,13 +26,27 @@ export default function ResultsList({ locksmiths, onLocksmithSelect }: ResultsLi
                 {index + 1}
               </div>
               
+              {/* Location icon - van for live locations, shop for HQ */}
+              <div className="flex-shrink-0">
+                {locksmith.locations?.some(loc => loc.isCurrentLocation) ? (
+                  <VanIcon3D className="w-6 h-6" animate={false} />
+                ) : (
+                  <ShopIcon3D className="w-6 h-6" />
+                )}
+              </div>
+              
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium truncate">
                   {locksmith.companyName}
                 </h3>
-                <div className="flex items-center text-gray-500 text-sm">
-                  <Clock className="w-4 h-4 mr-1" />
-                  <span>ETA: {locksmith.eta} min</span>
+                <div className="flex items-center justify-between text-gray-500 text-sm">
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 mr-1" />
+                    <span>ETA: {locksmith.eta} min</span>
+                  </div>
+                  {locksmith.locations?.some(loc => loc.isCurrentLocation) && (
+                    <LiveIndicator />
+                  )}
                 </div>
               </div>
             </div>

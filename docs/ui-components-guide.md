@@ -109,15 +109,38 @@ Shadcn/UI components are built with accessibility in mind:
 - Focus visible states
 - Screen reader support
 
+## Mobile UI Optimizations
+
+As of May 2025, the following mobile-specific UI optimizations have been implemented to improve the user experience on smaller screens:
+
+### Results Panel Improvements
+
+- **Reduced Height**: The results panel now takes up 30% of the viewport height (down from 60%) to show more of the map
+- **Hidden Scrollbars**: Implemented custom scrollbar-hiding CSS with the `scrollbar-hide` utility class
+- **Visual Scroll Indicators**: Added a subtle fade gradient at the bottom of scrollable content to indicate more content is available
+- **Touch Optimized**: Enhanced touch scrolling with `-webkit-overflow-scrolling: touch` and `scroll-behavior: smooth`
+
+### Call-to-Action Enhancements
+
+- **Full-Width Call Button**: The "Call Now" button is now full-width on mobile for better accessibility
+- **Centered Layout**: Action buttons are centered with appropriate padding
+- **Increased Touch Target**: Larger padding on buttons (py-3) for easier tapping
+- **Visual Hierarchy**: Primary actions (Call) are more prominent than secondary actions (Website)
+
+### Map Positioning
+
+- **Asymmetric Padding**: Added 200px bottom padding to the map viewport to keep pins visible above the results panel
+- **Smart Centering**: When clicking markers, the map centers them higher in the viewport
+- **Improved Visibility**: Search location and tradesperson markers remain visible even with the results panel open
+
 ## Future UI Enhancements
 
-Planned UI improvements include:
+Additional planned UI improvements include:
 
 - Dark mode theme support
 - Enhanced animation and transitions
 - Advanced form validation with real-time feedback
 - UI component performance optimizations
-- Mobile-specific UI optimizations
 
 ## Implementation Guidelines
 

@@ -50,6 +50,8 @@ Lasoo is a web application that helps users find and connect with locksmiths. Th
 
 ## Recent Updates
 
+- **Real-time Location Indicator**: Added a pulsing green "LIVE" indicator for tradespeople actively sharing their current location
+- **Improved Location Visualization**: Enhanced UI with van icons for live locations and shop icons for headquarters locations
 - **Service Radius Visualization**: Added an interactive feature that displays the locksmith's actual service coverage area on the map when selected
 - **HQ-Based Service Area**: Enhanced search algorithm to measure service radius from locksmith headquarters location, ensuring locksmiths aren't matched for jobs too far from their base
 - **Dual Location Display**: Improved map to always show both HQ location (home icon) and current location (navigation icon), giving users complete visibility
@@ -120,6 +122,8 @@ lasoo/
 - Smooth section navigation on landing page
 - **Specialized search filters for vehicle and home locksmith services**
 - **Comprehensive Location Search**: Shows locksmiths based on both their HQ location and current real-time position
+- **Live Location Indicators**: Clearly displays which locksmiths are actively sharing their current location with pulsing "LIVE" indicators
+- **Intuitive Location Icons**: Uses van icons for current locations and shop/building icons for headquarters
 - **Auto-search functionality triggered directly from landing page**
 - **Mobile-optimized search experience**
 - Admin panel with dashboard, user management, and analytics

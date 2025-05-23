@@ -4,8 +4,11 @@
  * shown when a user clicks on a map marker or search result
  */
 
-import { Phone, Globe, Home, Car, ArrowLeft, Navigation } from 'lucide-react'
+import { Phone, Globe, Home, Car, ArrowLeft } from 'lucide-react'
 import type { Locksmith } from '../../types/locksmith'
+import LiveIndicator from '../ui/LiveIndicator'
+import VanIcon3D from '../map/SimplifiedVanIcon3D'
+import ShopIcon3D from '../map/SimplifiedShopIcon3D'
 
 /**
  * Props for the LocksmithDetails component
@@ -57,9 +60,14 @@ export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetails
             {/* Current Location - if the locksmith is sharing their current position */}
             {locksmith.locations?.some(loc => loc.isCurrentLocation) && (
               <div className="flex items-start mb-2">
-                <Navigation className="w-5 h-5 mr-2 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-medium">Current Location</div>
+                <div className="flex-shrink-0 mr-2 mt-0.5">
+                  <VanIcon3D className="w-6 h-6" animate={false} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Current Location</span>
+                    <LiveIndicator />
+                  </div>
                   <div className="text-gray-500 text-sm">
                     {typeof locksmith.distance === 'number'
                       ? `${locksmith.distance.toFixed(1)} km from your search location`
@@ -77,7 +85,9 @@ export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetails
             {/* HQ Location - from the company postcode */}
             {locksmith.hqPostcode && (
               <div className="flex items-start">
-                <Home className="w-5 h-5 mr-2 text-indigo-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-shrink-0 mr-2 mt-0.5">
+                  <ShopIcon3D className="w-6 h-6" />
+                </div>
                 <div>
                   <div className="font-medium">Headquarters</div>
                   <div className="text-gray-500 text-sm">
@@ -97,18 +107,22 @@ export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetails
       <div className="border-t border-gray-200 my-4"></div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          {locksmith.telephoneNumber && (
+        {/* Call Now button - full width on mobile */}
+        {locksmith.telephoneNumber && (
+          <div className="flex justify-center px-2">
             <a 
               href={`tel:${locksmith.telephoneNumber}`}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="w-full inline-flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium text-base"
             >
               <Phone className="w-5 h-5 mr-2" />
               Call Now
             </a>
-          )}
-          
-          {locksmith.website && (
+          </div>
+        )}
+        
+        {/* Website button - shown below Call Now button */}
+        {locksmith.website && (
+          <div className="flex justify-center">
             <a 
               href={locksmith.website}
               target="_blank"
@@ -118,8 +132,9 @@ export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetails
               <Globe className="w-4 h-4 mr-2" />
               Visit Website
             </a>
-          )}
-        </div>
+          </div>
+        )}
+ 
 
 
 
