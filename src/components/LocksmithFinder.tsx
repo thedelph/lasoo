@@ -118,7 +118,11 @@ export default function LocksmithFinder({
       setSearchLocation(searchLoc);
 
       // Find nearby locksmiths with the 'either' mode to check both HQ and current locations
-      const locksmiths = await findNearby(latitude, longitude, 25, service, 'either' as 'current' | 'hq' | 'either');
+      let locksmiths = await findNearby(latitude, longitude, 25, service, 'either' as 'current' | 'hq' | 'either');
+
+      // Sort locksmiths by distance before setting state
+      locksmiths.sort((a, b) => a.distance - b.distance);
+
       setAvailableLocksmiths(locksmiths);
       
       // Fit map to include search location and any results

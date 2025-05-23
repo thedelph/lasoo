@@ -15,29 +15,37 @@ const VanIcon3D: React.FC<VanIcon3DProps> = ({
   bearing = 90, // Default to east if no bearing provided
   animate = true // Animate by default
 }) => {
+  // Each van needs to have a truly unique bearing to avoid React optimization issues
+  // We'll ensure the bearing is a number and convert it to a string to compare in equality checks
+  const bearingValue = typeof bearing === 'number' ? bearing : 90;
+  
   // Normalize the bearing to 0-360 range
-  const normalizedBearing = ((bearing % 360) + 360) % 360;
+  const normalizedBearing = ((bearingValue % 360) + 360) % 360;
   
-  // Determine if we should flip the van based on direction
-  // Vans traveling west (between 180° and 360°) should be flipped horizontally
-  const shouldFlip = normalizedBearing > 180 && normalizedBearing < 360;
+  // Create angle of rotation - we want vans to point in their direction of travel
+  // For a van, we want 0° to be facing right (east), 90° to be facing down (south), etc.
   
-  // Calculate rotation angle based on bearing
-  let rotationAngle;
-  if (shouldFlip) {
-    // For western directions, calculate deviation from west (270°)
-    rotationAngle = normalizedBearing - 270;
+  // First, determine if we're in the western hemisphere (left half of the circle)
+  const isWesternDirection = normalizedBearing > 180 && normalizedBearing < 360;
+  
+  // Calculate the rotation needed to orient the van correctly
+  // For eastern directions, we calculate how much we need to rotate from east (90°)
+  // For western directions, we calculate how much we need to rotate from west (270°) and flip the van
+  let rotationDegrees;
+  if (isWesternDirection) {
+    // For western directions, measure angle from 270° (west)
+    rotationDegrees = normalizedBearing - 270;
   } else {
-    // For eastern directions, calculate deviation from east (90°)
-    rotationAngle = normalizedBearing - 90;
+    // For eastern directions, measure angle from 90° (east)
+    rotationDegrees = normalizedBearing - 90;
   }
   
-  // Ensure the wheels always stay at the bottom by constraining rotation
-  if (rotationAngle > 90) rotationAngle -= 180;
-  if (rotationAngle < -90) rotationAngle += 180;
+  // Ensure the wheels always stay at the bottom by limiting rotation to ±90°
+  if (rotationDegrees > 90) rotationDegrees -= 180;
+  if (rotationDegrees < -90) rotationDegrees += 180;
   
   // Log the transformation details
-  console.log(`Van: bearing=${normalizedBearing}°, flip=${shouldFlip}, rotation=${rotationAngle}°`);
+  // console.log(`Van: bearing=${normalizedBearing}°, flip=${isWesternDirection}, rotation=${rotationDegrees}°`);
   
   // Animation keyframes
   const wiggleKeyframe = 'vanWiggle';
@@ -70,22 +78,26 @@ const VanIcon3D: React.FC<VanIcon3DProps> = ({
   // This prevents issues with the van disappearing when zooming in
   // We've removed scaling calculations entirely as they were causing display issues
   
-  // Build transformation string for proper orientation
+  // For SVG transforms, the order is important and they are applied from right to left
+  // So we need to create our transform string in reverse order of how we want them applied
+  
+  // First create an array to hold our transformations
   let transforms = [];
   
-  // Add transformations in the correct order (SVG applies them right-to-left)
-  // Rotation - applied last
-  transforms.push(`rotate(${rotationAngle},64,64)`);
-  
-  // Flip - applied second
-  if (shouldFlip) {
-    transforms.push('scale(-1,1)');
+  // 1. Flip horizontally if needed (this should be applied first, before rotation)
+  if (isWesternDirection) {
+    transforms.unshift('scale(-1,1) translate(-128,0)'); // Scale and translate to keep centered
   }
   
-  // We've removed the scaling transform as it causes the van to disappear
-  // The van will now size according to its container class
+  // 2. Then apply rotation (applied after flipping)
+  transforms.unshift(`rotate(${rotationDegrees},64,64)`);
   
+  // Join all transforms with spaces
   const transformValue = transforms.join(' ');
+  
+  // Debug to see what transform is being applied
+  console.log(`Van bearing=${bearingValue}, normalized=${normalizedBearing}, flip=${isWesternDirection}, rotation=${rotationDegrees}°, transform="${transformValue}"`);
+
   
   return (
     <svg 
@@ -95,9 +107,19 @@ const VanIcon3D: React.FC<VanIcon3DProps> = ({
         filter: 'drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.4))'
       }}
     >
-      {/* All van elements with transformation applied */}
+      {/* Outer group for main orientation (rotation/flip) */}
       <g transform={transformValue}>
-        <g transform="translate(14, 24)">
+        {/* Inner group for positioning and wiggle animation */}
+        <g 
+          transform="translate(14, 24)"
+          style={animate ? { 
+            animation: `${wiggleKeyframe} 1s ease-in-out infinite`,
+            // CSS transforms on SVG elements can be tricky with transform-origin.
+            // Default is 0,0 of the element's coordinate system.
+            // The van paths are drawn relative to this inner group's origin after its own translate(14,24).
+            // The small wiggle translations/rotations should visually work as expected.
+          } : undefined}
+        >
           {/* Main body */}
           <path
             d="M0 60 C0 40 10 20 30 18 L80 18 C90 18 95 30 100 40 L100 60 C100 65 95 70 90 70 L10 70 C5 70 0 65 0 60Z"
@@ -177,18 +199,7 @@ const VanIcon3D: React.FC<VanIcon3DProps> = ({
           <path d="M55 70 L55 60 L65 60 L65 70" fill="none" stroke="#000000" strokeWidth="2" />
         </g>
       </g>
-      
-      {/* Wiggle animation overlay */}
-      {animate && (
-        <g 
-          style={{ 
-            animation: `${wiggleKeyframe} 1s ease-in-out infinite`,
-            pointerEvents: 'none' 
-          }}
-        >
-          <rect x="0" y="0" width="128" height="128" fill="transparent" />
-        </g>
-      )}
+      {/* Animation is now applied directly to the van, no need for transparent overlay */}
     </svg>
   );
 };
