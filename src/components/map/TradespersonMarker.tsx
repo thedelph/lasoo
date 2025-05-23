@@ -17,6 +17,7 @@ interface TradespersonMarkerProps {
   visibleMarkers: Record<string, boolean>;
   roadSnappedPoints: Record<string, SnappedPoint>;
   onMarkerClick: (locksmith: Locksmith) => void;
+  isSelected: boolean;
 }
 
 const TradespersonMarker: React.FC<TradespersonMarkerProps> = ({ 
@@ -24,7 +25,8 @@ const TradespersonMarker: React.FC<TradespersonMarkerProps> = ({
   visibleMarkers, 
   roadSnappedPoints, 
   onMarkerClick,
-  displayNumber
+  displayNumber,
+  isSelected
 }) => {
   // Find current location and HQ location
   let currentLocation = locksmith.locations.find(loc => loc.isCurrentLocation);
@@ -108,6 +110,7 @@ const TradespersonMarker: React.FC<TradespersonMarkerProps> = ({
           snappedPoint={snappedPoint}
           onMarkerClick={onMarkerClick}
           displayNumber={displayNumber}
+          isSelected={isSelected}
         />
       )}
       

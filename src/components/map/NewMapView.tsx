@@ -56,6 +56,7 @@ export default function MapView({
   hasSearched,
   searchLocation,
   availableLocksmiths,
+  selectedLocksmith, // Added selectedLocksmith here
   onMarkerClick
 }: MapViewProps) {
   const [error, setError] = useState<string | null>(null);
@@ -184,6 +185,7 @@ export default function MapView({
             roadSnappedPoints={roadSnappedPoints}
             onMarkerClick={onMarkerClick}
             displayNumber={index + 1}
+            isSelected={selectedLocksmith?.id === locksmith.id}
           />
         ))}
       </Map>

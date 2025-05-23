@@ -17,6 +17,7 @@ interface VanMarkerProps {
   bearing: number;
   snappedPoint?: SnappedPoint;
   onMarkerClick: (locksmith: Locksmith) => void;
+  isSelected: boolean;
 }
 
 const VanMarker: React.FC<VanMarkerProps> = ({ 
@@ -26,7 +27,8 @@ const VanMarker: React.FC<VanMarkerProps> = ({
   bearing,
   snappedPoint,
   onMarkerClick,
-  displayNumber
+  displayNumber,
+  isSelected
 }) => {
   // Use snapped coordinates if available
   const finalLatitude = snappedPoint?.latitude || latitude;
@@ -39,6 +41,7 @@ const VanMarker: React.FC<VanMarkerProps> = ({
       latitude={finalLatitude}
       longitude={finalLongitude}
       anchor="center"
+      style={{ zIndex: isSelected ? 10 : 1 }}
     >
       <div 
         className="cursor-pointer relative"
