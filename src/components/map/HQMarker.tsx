@@ -42,13 +42,7 @@ const HQMarker: React.FC<HQMarkerProps> = ({
           {displayNumber}
         </div>
         <ShopIcon3D className="h-8 w-8 text-indigo-600" />
-        
-        {/* Special highlight for Ant - AntMad during testing */}
-        {locksmith.companyName.includes('Ant') && (
-          <div className="absolute -top-8 -left-16 bg-yellow-300 text-xs p-1 rounded whitespace-nowrap">
-            {locksmith.companyName}
-          </div>
-        )}
+
       </div>
     </Marker>
   );
