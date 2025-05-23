@@ -14,6 +14,8 @@ import DashboardOverview from './components/admin/DashboardOverview';
 import GodModeMap from './components/admin/GodModeMap';
 import SubscriptionManagement from './components/admin/SubscriptionManagement';
 import TradespeopleManagement from './components/admin/TradespeopleManagement';
+import ForgetMe from './components/ForgetMe'; // GDPR account deletion component
+import DeleteAccountRedirect from './components/DeleteAccountRedirect'; // Google Play Store account deletion URL
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/find" element={<FindPage />} />
+        <Route path="/forgetme" element={<ForgetMe />} />
+        <Route path="/delete-account" element={<DeleteAccountRedirect />} />
         
         {/* Auth routes - now using Supabase components */}
         <Route path="/locksmith/login" element={<Login />} />

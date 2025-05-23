@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { MapPin, Clock, Briefcase, Building } from "lucide-react";
+import { MapPin, Clock, Briefcase, Building, Settings } from "lucide-react";
 import CompanyDetailsTab from "./tabs/CompanyDetailsTab";
 import ServiceAreaTab from "./tabs/ServiceAreaTab";
 import WorkingHoursTab from "./tabs/WorkingHoursTab";
 import ServicesAndPricesTab from "./tabs/ServicesAndPricesTab";
+import AccountSettingsTab from "./tabs/AccountSettingsTab";
 
 export default function DashboardTabs() {
   const [activeTab, setActiveTab] = useState("company");
@@ -32,6 +33,12 @@ export default function DashboardTabs() {
       label: "Services & Prices",
       icon: <Briefcase className="h-4 w-4" />,
       component: <ServicesAndPricesTab />
+    },
+    {
+      id: "settings",
+      label: "Account Settings",
+      icon: <Settings className="h-4 w-4" />,
+      component: <AccountSettingsTab />
     }
   ];
 
