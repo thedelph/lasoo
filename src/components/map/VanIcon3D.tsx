@@ -24,21 +24,23 @@ interface VanIcon3DProps {
  */
 const VanIcon3D: React.FC<VanIcon3DProps> = ({ 
   className = "h-24 w-24", 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   direction = 'east', // kept for backward compatibility
   bearing = 90, // Default to east if no bearing provided
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   zoom = 15, // Default zoom level (not used for scaling anymore)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   minZoom = 10, // Minimum zoom level (kept for compatibility)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   maxZoom = 18 // Maximum zoom level (kept for compatibility)
 }) => {
   // Always use the bearing directly - simplifies the logic
   const normalizedBearing = ((bearing % 360) + 360) % 360;
   
-  // Debug info
-  console.log(`VanIcon3D received bearing: ${bearing}°, normalized to: ${normalizedBearing}°`);
+  // Use the variables so TypeScript doesn't complain
+  // This is a no-op that just ensures the variables are "used"
+  const _unused = { direction, zoom, minZoom, maxZoom };
+  // Only log in development to avoid console noise
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`VanIcon3D received bearing: ${bearing}°, normalized to: ${normalizedBearing}°`);
+    console.log('Unused params kept for compatibility:', _unused);
+  }
   
   // For reference only - not used in rendering directly anymore
   const getVanOrientation = () => {
