@@ -72,6 +72,18 @@ Stores real-time location data for service providers.
 | accuracy | double precision | Location accuracy in meters |
 | device_id | text | Device that reported location |
 
+### gdpr_deletion_logs
+
+Stores anonymized records of account deletion requests for GDPR compliance purposes.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint | Primary key |
+| deletion_date | timestamp with timezone | When the deletion was requested |
+| success | boolean | Whether the deletion was successful |
+| user_hash | text | Anonymized hash of the user ID for audit purposes |
+| created_at | timestamp with timezone | Record creation date |
+
 ## Database Optimization
 
 ### Unique Constraints
@@ -140,3 +152,13 @@ To maintain data integrity:
 2. Unique constraints prevent duplicates
 3. Default values ensure required fields have sensible values
 4. Database triggers can maintain consistency across related tables
+
+## GDPR Compliance
+
+To comply with GDPR regulations, the application provides:
+
+1. A "Forget Me" feature accessible at `/forgetme` and `/delete-account` routes
+2. Account deletion that removes all personal data from all tables
+3. Secure deletion process requiring authentication and password verification
+4. Anonymized logging of deletion requests for compliance purposes in the `gdpr_deletion_logs` table
+5. Row Level Security on the logs to restrict access to admin users only

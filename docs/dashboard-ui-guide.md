@@ -12,6 +12,7 @@ The Locksmith Dashboard is organized into a tabbed interface with the following 
 2. **Service Area**: Configure service radius and location settings
 3. **Working Hours**: Set business hours for each day of the week
 4. **Services & Prices**: Manage offered services and their pricing
+5. **Account Settings**: Manage account-related settings and data privacy options
 
 ## UI Components and Design System
 
@@ -132,6 +133,24 @@ The Services & Prices tab features:
    - Validation for required fields
    - Cancel/confirm action buttons
 
+### Account Settings Tab
+
+The Account Settings tab provides account management and data privacy features:
+
+1. **Account Information Section**:
+   - Display of basic account details (email, creation date)
+   - Read-only fields for reference information
+
+2. **Data & Privacy Section**:
+   - Data export option (placeholder for future implementation)
+   - Clear explanations of data handling practices
+
+3. **Danger Zone Section**:
+   - GDPR-compliant account deletion option
+   - Clear warning about the permanent nature of account deletion
+   - Red visual styling to indicate destructive action
+   - Trash icon for clear visual communication
+
 ## Common UI Patterns
 
 ### Loading States
@@ -216,3 +235,4 @@ The dashboard is fully responsive with these key breakpoints:
 - [UI Navigation Guide](./ui-navigation-guide.md)
 - [Supabase-Clerk Integration](./supabase-clerk-integration.md)
 - [Troubleshooting Guide](./troubleshooting-guide.md)
+- [GDPR Compliance Features](./database-schema-guide.md#gdpr-compliance)

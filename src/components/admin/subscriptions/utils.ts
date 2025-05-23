@@ -1,6 +1,5 @@
 import { supabase } from '../../../lib/supabase/client';
 import { format, addMonths } from 'date-fns';
-import { Subscription, SubscriptionPlan } from './types';
 
 /**
  * Format a date string to local date format

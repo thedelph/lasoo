@@ -9,7 +9,8 @@ This guide provides detailed instructions for using the Lasoo admin backend syst
 3. [Tradesperson Management](#tradesperson-management)
 4. [Subscription Management](#subscription-management)
 5. [God Mode Map](#god-mode-map)
-6. [Troubleshooting](#troubleshooting)
+6. [GDPR Compliance Monitoring](#gdpr-compliance-monitoring)
+7. [Troubleshooting](#troubleshooting)
 
 ## Accessing the Admin Backend
 
@@ -135,6 +136,42 @@ The God Mode Map provides a real-time view of all tradespeople sharing their loc
 - **Active vs. Inactive**: Active tradespeople (currently sharing location) have pulsing blue markers
 - **Distance from Base**: Helps understand how far tradespeople have traveled from their registered address
 - **Last Active Time**: Shows when the tradesperson's location was last updated
+
+## GDPR Compliance Monitoring
+
+The Lasoo platform includes GDPR compliance features that administrators should be aware of:
+
+### Account Deletion Tracking
+
+- **Anonymous Logging**: All account deletion requests are logged in the `gdpr_deletion_logs` table
+- **Privacy-Focused**: Only hashed user IDs are stored to maintain anonymity while providing audit capability
+- **Admin-Only Access**: Only admin users can view the deletion logs
+
+### Monitoring Account Deletions
+
+To view account deletion logs:
+
+1. Connect to the Supabase database using the admin console
+2. Navigate to the `gdpr_deletion_logs` table
+3. Review logs which contain:
+   - Deletion date and time
+   - Success status
+   - Anonymized user hash
+
+### User-Facing GDPR Features
+
+Users can access GDPR-related features through:
+
+- `/forgetme` - The main account deletion page
+- `/delete-account` - A redirect to the account deletion page (for Google Play Store compliance)
+- Account Settings tab in the dashboard - Contains a "Danger Zone" section with the Delete Account option
+
+### Implementation Details
+
+- All personal data is completely removed from all tables (users, user_metadata, locations)
+- Authentication accounts are properly deleted
+- The process requires identity verification through password re-entry
+- Clear warnings are provided about the permanent nature of account deletion
 
 ## Troubleshooting
 
