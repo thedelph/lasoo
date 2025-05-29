@@ -61,7 +61,13 @@ export default function HeroSection({ postcode, onPostcodeChange, onSubmit }: He
             24/7.
           </p>
 
-          <form className="mx-auto mb-8 max-w-xl px-4 sm:px-0">
+          <form 
+  className="mx-auto mb-8 max-w-xl px-4 sm:px-0"
+  onSubmit={(e) => {
+    e.preventDefault(); // Prevent default form submission (page refresh)
+    // Do nothing further, as user must click a specific button
+  }}
+>
             <div className="flex w-full overflow-hidden rounded-lg shadow-lg border-2 border-gray-300">
               <div className="flex-1 flex items-center bg-white rounded-lg px-4 py-2">
               <Input

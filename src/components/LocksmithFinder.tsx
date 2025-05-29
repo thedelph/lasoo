@@ -23,13 +23,13 @@ const INITIAL_VIEW = {
 interface LocksmithFinderProps {
   initialPostcode?: string;
   initialServiceType?: string;
-  autoSearch?: boolean;
+  // autoSearch prop removed as it's now handled by URL parameter 'autoSearch'
 }
 
 export default function LocksmithFinder({
   initialPostcode = '',
-  initialServiceType = 'home',
-  autoSearch = false
+  initialServiceType = 'home'
+  // autoSearch prop removed
 }: LocksmithFinderProps) {
   const mapRef = useRef<MapRef>(null)
   const [searchParams] = useSearchParams()
@@ -87,7 +87,12 @@ export default function LocksmithFinder({
 
   const handleSearch = async (searchPostcode: string) => {
     console.log('handleSearch called with:', searchPostcode, 'service:', service);
-    if (!searchPostcode.trim() || !mapboxToken) return;
+
+    if (!searchPostcode.trim() || !mapboxToken) {
+      console.warn('handleSearch returning early. Postcode empty or token missing. Postcode:', searchPostcode.trim(), 'Token:', !!mapboxToken);
+      return;
+    }
+    
 
     setGeocoding(true);
     setHasSearched(true);
@@ -197,18 +202,25 @@ export default function LocksmithFinder({
 
   // Simple direct auto-search effect - with proper dependencies
   useEffect(() => {
-    // Only run if we actually have the data and haven't searched yet
-    if (autoSearch && postcode && !hasSearched) {
-      console.log('Direct auto-search triggered with:', postcode, service);
-      
-      // Immediate timeout to break execution context but still run quickly
-      const timer = setTimeout(() => {
-        handleSearch(postcode);
-      }, 10); // Much shorter delay for responsiveness
-      
-      return () => clearTimeout(timer);
+    // This effect handles automatic searching when the page is loaded with specific URL parameters.
+    // It's triggered by `autoSearch=true` in the URL, typically set when navigating from the landing page.
+    const shouldAutoSearchFromUrl = searchParams.get('autoSearch') === 'true';
+
+    // Conditions for auto-search:
+    // 1. `autoSearch=true` is in the URL.
+    // 2. A `postcode` is available (either from URL params or initial props).
+    // 3. The `mapboxToken` is loaded (required for geocoding in `handleSearch`).
+    // 4. A search hasn't already been performed in this component instance (`!hasSearched`).
+    if (shouldAutoSearchFromUrl && postcode && mapboxToken && !hasSearched) {
+      // Set `hasSearched` to true immediately to prevent this effect from re-triggering
+      // for the same auto-search navigation if dependencies change due to this state update.
+      setHasSearched(true);
+      // Directly call `handleSearch`. This was previously in a `setTimeout`,
+      // but direct invocation avoids issues where the timeout was cleared by effect cleanup
+      // before `handleSearch` could run.
+      handleSearch(postcode);
     }
-  }, [autoSearch, postcode, service, hasSearched]); // Include all dependencies
+  }, [searchParams, postcode, service, hasSearched, mapboxToken]);
 
   return (
     <div className="relative w-full h-screen">

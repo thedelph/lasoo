@@ -35,6 +35,11 @@ The locksmith finder uses an advanced algorithm to provide the most relevant sea
 
 5. **Distance Calculation**: For locksmiths in search results, the system displays the distance from the HQ location to the search location.
 
+6. **Automatic Search from Landing Page**:
+   - When a user initiates a search from the main landing page (hero section), they are navigated to the `/find` page (which uses the LocksmithFinder component).
+   - The navigation includes URL parameters: `postcode`, `serviceType`, and `autoSearch=true`.
+   - The `LocksmithFinder` component detects these parameters. If `autoSearch=true` is present and a valid postcode and service type are provided, it automatically performs the search upon loading, displaying results without requiring the user to click the search button again on the finder page.
+
 ## Service Radius Visualization
 
 A key feature of the Locksmith Finder is the interactive service radius visualization:

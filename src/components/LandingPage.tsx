@@ -12,15 +12,16 @@ export default function LandingPage() {
   const [postcode, setPostcode] = useState('')
 
   const handleSearch = (e: FormEvent, serviceType: string) => {
-    e.preventDefault()
+    e.preventDefault();
     if (postcode.trim()) {
-      // Set a flag in sessionStorage to ensure the search runs on the next page
-      sessionStorage.setItem('lasoo_search_trigger', 'true');
-      sessionStorage.setItem('lasoo_search_postcode', postcode.trim());
-      sessionStorage.setItem('lasoo_search_service', serviceType);
-      
-      // Navigate to the search page with postcode and serviceType parameters
-      navigate(`/find?postcode=${encodeURIComponent(postcode.trim())}&serviceType=${serviceType}&autoSearch=true`)
+      // Navigate to the /find page. The LocksmithFinder component on that page
+      // will use the 'postcode', 'serviceType', and 'autoSearch=true' URL parameters
+      // to initialize its state and trigger an automatic search.
+      navigate(
+        `/find?postcode=${encodeURIComponent(
+          postcode.trim()
+        )}&serviceType=${serviceType}&autoSearch=true`
+      );
     }
   }
 
