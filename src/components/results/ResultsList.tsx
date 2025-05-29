@@ -28,26 +28,51 @@ export default function ResultsList({ locksmiths, onLocksmithSelect }: ResultsLi
               
               {/* Location icon - van for live locations, shop for HQ */}
               <div className="flex-shrink-0">
-                {locksmith.locations?.some(loc => loc.isCurrentLocation) ? (
+                {locksmith.isDisplayingLive ? (
                   <VanIcon3D className="w-6 h-6" animate={false} />
                 ) : (
                   <ShopIcon3D className="w-6 h-6" />
                 )}
               </div>
               
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0"> {/* Text Block: Company Name + ETA */}
                 <h3 className="font-medium truncate">
                   {locksmith.companyName}
                 </h3>
-                <div className="flex items-center justify-between text-gray-500 text-sm">
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1" />
-                    <span>ETA: {locksmith.eta} min</span>
-                  </div>
-                  {locksmith.locations?.some(loc => loc.isCurrentLocation) && (
-                    <LiveIndicator />
-                  )}
+                <div className="flex items-center text-gray-500 text-sm"> {/* ETA only */}
+                  <Clock className="w-4 h-4 mr-1" />
+                  <span>ETA: {locksmith.eta} min</span>
                 </div>
+              </div>
+              <div className="ml-auto flex items-center"> {/* Wrapper for LiveIndicator, pushed right & vertically centered */}
+                {/* Conditional LiveIndicator based on status */}
+                {(() => {
+                  if (locksmith.isDisplayingLive) {
+                    return <LiveIndicator status="live" />;
+                  } else if (locksmith.liveLocationUpdatedAt) {
+                    const lastUpdateDate = new Date(locksmith.liveLocationUpdatedAt);
+                    const today = new Date();
+                    let formattedLastUpdate: string;
+                    const lastUpdateDayStart = new Date(lastUpdateDate.getFullYear(), lastUpdateDate.getMonth(), lastUpdateDate.getDate()).getTime();
+                    const todayDayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+                    const yesterdayDayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1).getTime();
+
+                    if (lastUpdateDayStart === todayDayStart) {
+                      formattedLastUpdate = lastUpdateDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                    } else if (lastUpdateDayStart === yesterdayDayStart) {
+                      formattedLastUpdate = 'Yesterday';
+                    } else {
+                      const diffDays = Math.floor((todayDayStart - lastUpdateDayStart) / (1000 * 60 * 60 * 24));
+                      if (diffDays < 7) {
+                        formattedLastUpdate = lastUpdateDate.toLocaleDateString([], { weekday: 'short' });
+                      } else {
+                        formattedLastUpdate = lastUpdateDate.toLocaleDateString([], { day: 'numeric', month: 'short' });
+                      }
+                    }
+                    return <LiveIndicator status="last_live" lastLiveTimestamp={formattedLastUpdate.toUpperCase()} />;
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           </div>

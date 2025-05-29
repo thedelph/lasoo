@@ -48,36 +48,70 @@ export default function LocksmithDetails({ locksmith, onBack }: LocksmithDetails
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold mb-2">
+        <h2 className="text-2xl font-bold mb-1">
           {locksmith.companyName}
         </h2>
+
 
         <div className="flex flex-col gap-2 mb-3">
           {/* Location Information with icons */}
           <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
             <h3 className="font-medium mb-2">Location Information</h3>
             
-            {/* Current Location - if the locksmith is sharing their current position */}
-            {locksmith.locations?.some(loc => loc.isCurrentLocation) && (
+            {/* Live Location Info - shown only if actively displaying live location */}
+            {locksmith.isDisplayingLive && (
               <div className="flex items-start mb-2">
                 <div className="flex-shrink-0 mr-2 mt-0.5">
                   <VanIcon3D className="w-6 h-6" animate={false} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium">Current Location</span>
-                    <LiveIndicator />
+                    <span className="font-medium">{locksmith.isDisplayingLive ? 'Current Location' : 'Last Known Live Location'}</span>
+                    {/* LiveIndicator will only be shown if isDisplayingLive or liveLocationUpdatedAt is true due to parent conditional */}
+                    {(() => {
+                      if (locksmith.isDisplayingLive) {
+                        return <LiveIndicator status="live" />;
+                      } else if (locksmith.liveLocationUpdatedAt) {
+                        const lastUpdateDate = new Date(locksmith.liveLocationUpdatedAt);
+                        const today = new Date();
+                        let formattedLastUpdate: string;
+                        const lastUpdateDayStart = new Date(lastUpdateDate.getFullYear(), lastUpdateDate.getMonth(), lastUpdateDate.getDate()).getTime();
+                        const todayDayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+                        const yesterdayDayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1).getTime();
+
+                        if (lastUpdateDayStart === todayDayStart) {
+                          formattedLastUpdate = lastUpdateDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                        } else if (lastUpdateDayStart === yesterdayDayStart) {
+                          formattedLastUpdate = 'Yesterday';
+                        } else {
+                          const diffDays = Math.floor((todayDayStart - lastUpdateDayStart) / (1000 * 60 * 60 * 24));
+                          if (diffDays < 7) {
+                            formattedLastUpdate = lastUpdateDate.toLocaleDateString([], { weekday: 'short' });
+                          } else {
+                            formattedLastUpdate = lastUpdateDate.toLocaleDateString([], { day: 'numeric', month: 'short' });
+                          }
+                        }
+                        return <LiveIndicator status="last_live" lastLiveTimestamp={formattedLastUpdate.toUpperCase()} />;
+                      }
+                      return null;
+                    })()}
                   </div>
-                  <div className="text-gray-500 text-sm">
-                    {typeof locksmith.distance === 'number'
-                      ? `${locksmith.distance.toFixed(1)} km from your search location`
-                      : 'Distance unknown'}
-                  </div>
-                  {locksmith.eta !== undefined && (
-                    <div className="text-gray-500 text-sm">
-                      Estimated arrival time: {locksmith.eta} min
-                    </div>
+                  {/* Details relevant if displaying live location */}
+                  {locksmith.isDisplayingLive && (
+                    <>
+                      <div className="text-gray-500 text-sm">
+                        {typeof locksmith.distance === 'number'
+                          ? `${locksmith.distance.toFixed(1)} km from your search location`
+                          : 'Distance unknown'}
+                      </div>
+                      {locksmith.eta !== undefined && (
+                        <div className="text-gray-500 text-sm">
+                          Estimated arrival time: {locksmith.eta} min
+                        </div>
+                      )}
+                    </>
                   )}
+                  {/* The 'Last update:' text is now part of the LiveIndicator when status is 'last_live' */}
                 </div>
               </div>
             )}

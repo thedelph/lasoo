@@ -43,6 +43,7 @@ interface LocationRecord {
   user_id: string;        // Foreign key to user_id in users table
   latitude: string;       // Latitude coordinate as string
   longitude: string;      // Longitude coordinate as string
+  date_updated?: string;  // Timestamp of when the location was last updated (ISO string)
 }
 
 /**
@@ -78,9 +79,15 @@ async function geocodePostcode(postcode: string, mapboxToken: string): Promise<{
  * 
  * @returns Object containing the findNearby function and loading state
  */
-export function useLocksmiths() {
-  const [loading, setLoading] = useState(false);
-  const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string;
+type ProcessedUser = UserRecord & { 
+  distance?: number; 
+  hqCoords?: { latitude: number; longitude: number }; 
+  location?: LocationRecord | null; 
+};
+
+export function useLocksmiths(passedMapboxToken?: string | null) {
+  const [loading, setLoading] = useState(false); // 'loading' state is returned for consumer, not used internally after set.
+  const mapboxToken = passedMapboxToken || import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string;
 
   /**
    * Finds nearby locksmiths based on search coordinates and filters
@@ -165,7 +172,7 @@ export function useLocksmiths() {
       // Step 3: Query locations table
       const { data: locations, error: locationsError } = await supabase
         .from('locations')
-        .select('user_id, latitude, longitude')
+        .select('user_id, latitude, longitude, date_updated')
         .in('user_id', userIds)
         .not('latitude', 'is', null)
         .not('longitude', 'is', null);
@@ -224,7 +231,7 @@ export function useLocksmiths() {
           // If company postcode exists, try to geocode it to use as HQ
           if (user.company_postcode) {
             try {
-              const geocoded = await geocodePostcode(user.company_postcode, mapboxToken);
+              const geocoded = await geocodePostcode(user.company_postcode, mapboxToken!); // mapboxToken should be ensured by calling context or default
               
               if (geocoded) {
                 console.log(`HQ location for ${user.company_name}: ${geocoded.latitude}, ${geocoded.longitude}`);
@@ -290,89 +297,151 @@ export function useLocksmiths() {
         .filter(result => result.inRange)
         .map(result => ({
           ...result.user,
-          distance: result.distance,
-          hqCoords: result.hqCoords
+          distance: result.distance === null ? undefined : result.distance,
+          hqCoords: result.hqCoords === null ? undefined : result.hqCoords
         }));
 
-      // Step 6: Map to Locksmith type with multiple locations
-      const locksmithPromises = inRangeUsers.map(async user => {
-        // Create array to store all locations for this locksmith
-        const locations: Location[] = [];
-        
-        // Add current location if available (user is sharing location)
-        if (user.location) {
-          const currentLocation: Location = {
-            latitude: Number(user.location.latitude),
-            longitude: Number(user.location.longitude),
-            isCurrentLocation: true
-          };
-          locations.push(currentLocation);
+      // Step 6: Map to Locksmith type with multiple locations and time-based logic
+      const locksmithPromises = inRangeUsers.map(async (user: ProcessedUser) => {
+        const allLocationsForLocksmith: Location[] = [];
+
+        let displayLat: number;
+        let displayLng: number;
+        let statusText: string;
+        let actualLiveLatitude: number | undefined;
+        let actualLiveLongitude: number | undefined;
+        let actualLiveLocationTimestamp: string | undefined;
+        let isCurrentlyDisplayingLive = false;
+
+        const hqGeocoded: { latitude: number; longitude: number } | undefined = user.hqCoords;
+
+        // Add HQ location to allLocationsForLocksmith if available
+        if (hqGeocoded) {
+          allLocationsForLocksmith.push({
+            latitude: hqGeocoded.latitude,
+            longitude: hqGeocoded.longitude,
+            isCurrentLocation: false,
+            // date_updated is not applicable for HQ from geocoding
+          });
         }
-        
-        // ALWAYS add company postcode as HQ location if available
-        // This ensures we show the HQ location on the map as required
-        if (user.company_postcode) {
+
+        const liveLocationRecord = user.location; // This is LocationRecord, now with date_updated
+
+        if (liveLocationRecord && liveLocationRecord.latitude && liveLocationRecord.longitude && liveLocationRecord.date_updated) {
+          actualLiveLatitude = Number(liveLocationRecord.latitude);
+          actualLiveLongitude = Number(liveLocationRecord.longitude);
+          actualLiveLocationTimestamp = liveLocationRecord.date_updated;
+
+          // Add live location to allLocationsForLocksmith, now including date_updated
+          allLocationsForLocksmith.push({
+            latitude: actualLiveLatitude,
+            longitude: actualLiveLongitude,
+            isCurrentLocation: true,
+            date_updated: actualLiveLocationTimestamp,
+          });
+
           try {
-            const geocoded = await geocodePostcode(user.company_postcode, mapboxToken);
-            
-            if (geocoded) {
-              // Check if this location is already in the array (to avoid duplicates)
-              const hqExists = locations.some(
-                loc => 
-                  Math.abs(parseFloat(String(loc.latitude)) - parseFloat(String(geocoded.latitude))) < 0.0001 && 
-                  Math.abs(parseFloat(String(loc.longitude)) - parseFloat(String(geocoded.longitude))) < 0.0001
-              );
+            const locationDate = new Date(actualLiveLocationTimestamp);
+            const now = new Date(); // Current time at execution
+            const ageInMinutes = (now.getTime() - locationDate.getTime()) / (1000 * 60);
+
+            if (ageInMinutes <= 15) {
+              displayLat = actualLiveLatitude;
+              displayLng = actualLiveLongitude;
+              statusText = `Live @ ${locationDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+              isCurrentlyDisplayingLive = true;
+            } else {
+              // Live location is older than 15 minutes. Format the timestamp for statusText.
+              isCurrentlyDisplayingLive = false;
+
+              let formattedLastUpdate: string;
+              // 'locationDate' and 'now' are defined in the outer scope (lines 343-344)
+              const lastUpdateDayStart = new Date(locationDate.getFullYear(), locationDate.getMonth(), locationDate.getDate()).getTime();
+              const todayDayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+              const yesterdayDayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).getTime();
+
+              if (lastUpdateDayStart === todayDayStart) {
+                formattedLastUpdate = locationDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
+              } else if (lastUpdateDayStart === yesterdayDayStart) {
+                formattedLastUpdate = 'YESTERDAY';
+              } else {
+                const diffDays = Math.floor((todayDayStart - lastUpdateDayStart) / (1000 * 60 * 60 * 24));
+                if (diffDays < 7) {
+                  formattedLastUpdate = locationDate.toLocaleDateString([], { weekday: 'short' }).toUpperCase();
+                } else {
+                  const day = locationDate.getDate();
+                  const month = locationDate.toLocaleDateString([], { month: 'short' }).toUpperCase();
+                  formattedLastUpdate = `${day} ${month}`;
+                }
+              }
               
-              if (!hqExists) {
-                locations.push({
-                  latitude: geocoded.latitude,
-                  longitude: geocoded.longitude,
-                  isCurrentLocation: false // Company postcode is HQ, not current
-                });
+              statusText = `LAST LIVE ${formattedLastUpdate}`;
+
+              // Set displayLat/Lng: prefer HQ, fallback to stale live coordinates
+              if (hqGeocoded) {
+                displayLat = hqGeocoded.latitude;
+                displayLng = hqGeocoded.longitude;
+              } else {
+                displayLat = actualLiveLatitude; 
+                displayLng = actualLiveLongitude;
               }
             }
-          } catch (error) {
-            console.error(`Failed to geocode company postcode for ${user.company_name}:`, error);
-          }
+          } catch (e) { // Error parsing live location timestamp
+            console.error(`Error parsing date_updated '${actualLiveLocationTimestamp}' for user ${user.user_id}:`, e);
+            if (hqGeocoded) {
+              displayLat = hqGeocoded.latitude;
+              displayLng = hqGeocoded.longitude;
+              statusText = `Showing HQ (Live data error)`;
+              isCurrentlyDisplayingLive = false;
+            } else {
+              // Fallback to live coords if available, even with date error, if no HQ
+              displayLat = actualLiveLatitude;
+              displayLng = actualLiveLongitude;
+              statusText = `Live (Data error, HQ N/A)`;
+              isCurrentlyDisplayingLive = false; 
+            }
+          } // End of catch
+      } else { // No liveLocationRecord (or it was incomplete initially)
+        if (hqGeocoded) {
+          displayLat = hqGeocoded.latitude;
+          displayLng = hqGeocoded.longitude;
+          statusText = `Showing HQ (Not Sharing Live)`;
+          isCurrentlyDisplayingLive = false;
+        } else {
+          displayLat = 0; 
+          displayLng = 0;
+          statusText = 'Location Unavailable';
+          isCurrentlyDisplayingLive = false;
+          console.warn(`User ${user.user_id} (${user.company_name}) has no live record and no HQ location.`);
         }
-        
-        // We already have the distance calculated from HQ or current location
-        const distance = user.distance || 0;
-        
-        // If we have HQ coordinates from previous step, add them
-        if (user.hqCoords) {
-          // Add HQ location
-          locations.push({
-            latitude: user.hqCoords.latitude,
-            longitude: user.hqCoords.longitude,
-            isCurrentLocation: false // This is HQ, not current location
-          });
-          console.log(`Using pre-calculated HQ location for ${user.company_name}`);
-        }
-        
-        // If we have no locations at all, use HQ coordinates as primary
-        const primaryLocation = locations.length > 0 ? locations[0] : 
-                                user.hqCoords ? { latitude: user.hqCoords.latitude, longitude: user.hqCoords.longitude } :
-                                { latitude: 0, longitude: 0 };
-        
+      } // End of if (liveLocationRecord && liveLocationRecord.latitude && liveLocationRecord.longitude) else block
+
+        // Deduplicate locations in allLocationsForLocksmith (e.g. if live and HQ are identical after processing)
+        const uniqueLocations = Array.from(new Map(allLocationsForLocksmith.map(loc => [`${loc.latitude}_${loc.longitude}_${loc.isCurrentLocation}`, loc])).values());
+
         return {
           id: String(user.id),
           companyName: user.company_name || 'Unknown Company',
           telephoneNumber: user.phone || '',
-          website: undefined, // We don't have website information
+          website: undefined, 
           servicesOffered: [user.service_type || 'Locksmith'],
-          // Use either current location or HQ location as primary coordinates
-          latitude: primaryLocation.latitude,
-          longitude: primaryLocation.longitude,
-          // Store all locations
-          locations: locations,
-          // Store distance from search location
-          distance: distance || 0,
-          // Store HQ postcode for reference
+          
+          latitude: displayLat,  // Primary display latitude
+          longitude: displayLng, // Primary display longitude
+          
+          locations: uniqueLocations, // All available locations (current + HQ) with timestamps if applicable
+          
+          distance: user.distance || 0,
           hqPostcode: user.company_postcode,
-          // Use the actual service radius from the database, not the default search radius
-          serviceRadius: user.service_radius || radiusKm,
-          eta: Math.round((distance || 0) * 2 + 10)
+          serviceRadius: user.service_radius || radiusKm, // Use actual service radius
+          eta: Math.round((user.distance || 0) * 2 + 10),
+
+          // New fields from locksmith.ts type update
+          liveLatitude: actualLiveLatitude,
+          liveLongitude: actualLiveLongitude,
+          liveLocationUpdatedAt: actualLiveLocationTimestamp,
+          locationStatus: statusText,
+          isDisplayingLive: isCurrentlyDisplayingLive,
         };
       });
 

@@ -8,7 +8,6 @@ import type { Locksmith } from '../../types/locksmith';
 import VanMarker from './VanMarker';
 import HQMarker from './HQMarker';
 import { SnappedPoint } from './utils/mapHelpers';
-import { processSpecialCases } from './utils/specialCases';
 import { calculateCompanyBearing } from './utils/mapHelpers';
 
 interface TradespersonMarkerProps {
@@ -28,62 +27,31 @@ const TradespersonMarker: React.FC<TradespersonMarkerProps> = ({
   displayNumber,
   isSelected
 }) => {
-  // Find current location and HQ location
-  let currentLocation = locksmith.locations.find(loc => loc.isCurrentLocation);
-  let hqLocation = locksmith.locations.find(loc => !loc.isCurrentLocation);
-  
-  // If no HQ location found but we have coordinates in the main locksmith data
-  if (!hqLocation && locksmith.latitude && locksmith.longitude) {
-    hqLocation = {
-      latitude: locksmith.latitude,
-      longitude: locksmith.longitude,
-      isCurrentLocation: false
-    };
-  }
-  
-  // Process any special cases (like Ant - AntMad)
-  const processedLocations = processSpecialCases(locksmith, hqLocation, currentLocation);
-  hqLocation = processedLocations.hqLocation;
-  currentLocation = processedLocations.currentLocation;
-  
-  // Default to east-facing (90 degrees)
-  let bearing = 90;
-  
-  // Get bearing from road snapping if available
-  const snappedPoint = roadSnappedPoints[`${locksmith.id}-current`];
-  if (snappedPoint && typeof snappedPoint.bearing === 'number') {
-    // Use the road bearing if available
-    bearing = snappedPoint.bearing;
-  } else {
-    // Fallback: Calculate bearing based on company name + locksmith ID
-    // This ensures different tradespeople have different bearings but remain consistent
-    const baseBearing = calculateCompanyBearing(locksmith.companyName);
-    
-    // Use the locksmith ID to create a consistent offset for this specific tradesperson
-    const idHash = locksmith.id.split('').reduce(
-      (acc, char) => acc + char.charCodeAt(0), 0
-    );
-    
-    // Apply the offset to create variation between different tradespeople
-    bearing = (baseBearing + (idHash % 360)) % 360;
-  }
+  let bearing = 90; // Default bearing
+  const snappedPoint = roadSnappedPoints[`${locksmith.id}-current`]; // Key used in prepareLocationsForSnapping
 
-  // Debug log for van data
-  if (currentLocation) {
-    const vanMarkerLatitude = snappedPoint?.latitude || currentLocation?.latitude;
-    const vanMarkerLongitude = snappedPoint?.longitude || currentLocation?.longitude;
-    // Determine the bearing VanMarker will effectively use
-    let finalVanBearing = bearing; // This is the bearing from TradespersonMarker's logic
+  if (locksmith.isDisplayingLive) {
+    // Calculate bearing for live (van) marker
+    if (snappedPoint && typeof snappedPoint.bearing === 'number') {
+      bearing = snappedPoint.bearing;
+    } else {
+      const baseBearing = calculateCompanyBearing(locksmith.companyName);
+      const idHash = locksmith.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      bearing = (baseBearing + (idHash % 360)) % 360;
+    }
+
+    // Debug log for van data
+    const vanMarkerLatitude = snappedPoint?.latitude || locksmith.latitude;
+    const vanMarkerLongitude = snappedPoint?.longitude || locksmith.longitude;
+    let finalVanBearing = bearing;
     if (snappedPoint && typeof snappedPoint.bearing === 'number') {
       finalVanBearing = snappedPoint.bearing;
     }
-
     console.log(`[TradespersonMarker] Van data for ${locksmith.companyName} (${locksmith.id}):`, {
-      originalLat: currentLocation.latitude,
-      originalLng: currentLocation.longitude,
-      snappedPointDetails: snappedPoint, // Contains snapped lat, lng, bearing from API
-      bearingCalculatedInTradespersonMarker: bearing, // Bearing after fallback/snapping logic in this component
-      // Values VanMarker will actually use:
+      originalLat: locksmith.latitude, // This is the live location
+      originalLng: locksmith.longitude,
+      snappedPointDetails: snappedPoint,
+      bearingCalculatedInTradespersonMarker: bearing,
       finalVanLat: vanMarkerLatitude,
       finalVanLng: vanMarkerLongitude,
       finalVanBearing: finalVanBearing,
@@ -92,20 +60,17 @@ const TradespersonMarker: React.FC<TradespersonMarkerProps> = ({
     });
   }
   
-  // Check if van marker should be visible (prevent overlap)
-  const isVanVisible = visibleMarkers[`${locksmith.id}-van`] !== false;
-  
-  // Check if HQ marker should be visible (prevent overlap)
-  const isHQVisible = visibleMarkers[`${locksmith.id}-hq`] !== false;
-  
+  // Visibility checks (keys might need to align with NewMapView's logic if it changes)
+  const isVanMarkerVisible = locksmith.isDisplayingLive && visibleMarkers[`${locksmith.id}-van`] !== false;
+  const isHQMarkerVisible = !locksmith.isDisplayingLive && visibleMarkers[`${locksmith.id}-hq`] !== false;
+
   return (
     <div key={locksmith.id}>
-      {/* Show van marker if it exists and is visible */}
-      {currentLocation && isVanVisible && (
+      {isVanMarkerVisible && (
         <VanMarker
           locksmith={locksmith}
-          latitude={currentLocation.latitude}
-          longitude={currentLocation.longitude}
+          latitude={locksmith.latitude} // This is the live location
+          longitude={locksmith.longitude}
           bearing={bearing}
           snappedPoint={snappedPoint}
           onMarkerClick={onMarkerClick}
@@ -114,12 +79,11 @@ const TradespersonMarker: React.FC<TradespersonMarkerProps> = ({
         />
       )}
       
-      {/* HQ location (shop icon) - Only show if no live location is shared */}
-      {hqLocation && isHQVisible && !currentLocation && (
+      {isHQMarkerVisible && (
         <HQMarker
           locksmith={locksmith}
-          latitude={hqLocation.latitude}
-          longitude={hqLocation.longitude}
+          latitude={locksmith.latitude} // This is the HQ location
+          longitude={locksmith.longitude}
           onMarkerClick={onMarkerClick}
           displayNumber={displayNumber}
         />

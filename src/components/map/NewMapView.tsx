@@ -119,12 +119,14 @@ export default function MapView({
     
     // Process all tradesperson markers
     availableLocksmiths.forEach(locksmith => {
-      // Always show van marker for current location (higher priority)
-      newVisibleMarkers[`${locksmith.id}-van`] = true;
-      
-      // Always show HQ marker if no current location
-      const hasCurrentLocation = locksmith.locations.some(loc => loc.isCurrentLocation);
-      newVisibleMarkers[`${locksmith.id}-hq`] = !hasCurrentLocation;
+      // Set visibility based on the isDisplayingLive flag
+      if (locksmith.isDisplayingLive) {
+        newVisibleMarkers[`${locksmith.id}-van`] = true;  // Show Van marker
+        newVisibleMarkers[`${locksmith.id}-hq`] = false; // Hide HQ marker
+      } else {
+        newVisibleMarkers[`${locksmith.id}-van`] = false; // Hide Van marker
+        newVisibleMarkers[`${locksmith.id}-hq`] = true;   // Show HQ marker
+      }
     });
     
     setVisibleMarkers(newVisibleMarkers);

@@ -14,6 +14,8 @@ export interface Location {
   longitude: number;
   /** Whether this is current location (true) or HQ location (false) */
   isCurrentLocation: boolean;
+  /** Timestamp of when the location was last updated (ISO string), primarily for live locations */
+  date_updated?: string;
 }
 
 /**
@@ -51,4 +53,15 @@ export interface Locksmith {
   
   /** Original postcode of company headquarters */
   hqPostcode?: string;
+
+  /** Actual latitude of the live location, if available and recent */
+  liveLatitude?: number;
+  /** Actual longitude of the live location, if available and recent */
+  liveLongitude?: number;
+  /** Timestamp (ISO string) of the last live location update from the database */
+  liveLocationUpdatedAt?: string;
+  /** User-facing status of the location (e.g., 'Live @ 10:30 AM', 'Using HQ (Live > 15m ago)') */
+  locationStatus?: string;
+  /** True if the primary latitude/longitude are from a recent live location, false if HQ or stale live. */
+  isDisplayingLive: boolean;
 }

@@ -69,9 +69,10 @@ The map uses different marker styles to clearly indicate different location type
 
 To help users quickly identify which tradespeople are actively sharing their real-time location:
 
-- **Pulsing LIVE Tag**: A green "LIVE" indicator with pulsing animation appears in the results list for tradespeople who are actively sharing their current location
-- **Right-Aligned Indicator**: The LIVE indicator is positioned on the right side of the results card for easy visibility
-- **Details View Indicator**: When viewing a tradesperson's details, the LIVE indicator appears next to their current location information
+- **Status Indicators**: Tradespeople actively sharing their location are shown with a pulsing green "LIVE" indicator. If their last known location is recent but not currently live, an amber indicator is shown with an uppercase timestamp (e.g., "LAST LIVE YESTERDAY", "LAST LIVE 10:30 AM", "LAST LIVE TUE").
+- **Positioning**: In the results list, the indicator is positioned on the right side of each item and is vertically centered for clear visibility and balanced layout.
+- **Details View**: The same "LIVE" / "LAST LIVE" indicators are used in the locksmith's detail view next to their location information.
+- **Primary Information Source**: The `LiveIndicator` is now the primary visual cue for live/stale status. Redundant textual status messages previously displayed elsewhere have been removed to improve clarity.
 
 ### Locksmith Details Panel
 
@@ -80,9 +81,10 @@ When a locksmith is selected, the details panel shows comprehensive information:
 - **Business Name**: The locksmith's company name
 - **Service Types**: What services they offer (home, vehicle, etc.)
 - **Location Type Icons**: Van icon for current location and shop icon for headquarters
-- **Live Status**: Pulsing green "LIVE" indicator for tradespeople sharing their current location
+- **Live Status**: Displays a pulsing green "LIVE" indicator for active real-time locations, or an amber indicator with an uppercase timestamp (e.g., "LAST LIVE YESTERDAY") for recently known locations.
 - **HQ Location**: The postcode and address of their headquarters
 - **Current Location**: Their current location (if they're sharing it)
+- **Conditional Location Details**: The detailed "Last Known Live Location" section (including map and address) is only displayed if a live or "last live" location is available, providing a cleaner view for HQ-only results.
 - **Distance**: How far they are from the search location (measured to HQ)
 - **Service Radius**: How far they're willing to travel for jobs
 - **Contact Information**: Phone number and other contact details
@@ -139,13 +141,14 @@ Users can filter results by selecting:
 
 The locksmith finder has been enhanced with:
 
-1. **Live Location Indicators**: Added pulsing green "LIVE" indicators to clearly show which tradespeople are actively sharing their current location
-2. **Enhanced Location Visualization**: Implemented van icons for current locations and shop icons for headquarters in both the results list and details view
-3. **Improved Search Algorithm**: Now properly considers both HQ and current locations when searching
-4. **Geocoding Cache**: Added a database cache for geocoded postcodes to improve reliability
-5. **Fixed Postcode Coordinates**: Ensured accurate geocoding of postcodes for proper service area calculations
-6. **Distance Calculations**: Updated to accurately reflect distances from both current and HQ locations
-7. **Mobile UI Enhancements**: Significant improvements to the mobile experience:
+1. **Live Location Status Clarity**: Updated the display of live and stale location statuses. Actively live locations feature a pulsing green "LIVE" tag. Stale ("LAST LIVE") locations now show an amber indicator accompanied by an uppercase timestamp (e.g., "YESTERDAY", "TUE", "10:30 AM"). Redundant status text elsewhere in the UI has been removed, making the `LiveIndicator` the sole, clear source for this information.
+2. **Improved Visual Alignment**: Vertically centered the `LiveIndicator` within each item in the search results list for a cleaner and more balanced user interface.
+3. **Enhanced Location Visualization**: Implemented van icons for current locations and shop icons for headquarters in both the results list and details view
+4. **Improved Search Algorithm**: Now properly considers both HQ and current locations when searching
+5. **Geocoding Cache**: Added a database cache for geocoded postcodes to improve reliability
+6. **Fixed Postcode Coordinates**: Ensured accurate geocoding of postcodes for proper service area calculations
+7. **Distance Calculations**: Updated to accurately reflect distances from both current and HQ locations
+8. **Mobile UI Enhancements**: Significant improvements to the mobile experience:
    - Reduced results panel height (30% of viewport instead of 60%) for better map visibility
    - Hidden scrollbars with visual fade indicators for cleaner UI
    - Full-width, centered Call Now button for improved accessibility

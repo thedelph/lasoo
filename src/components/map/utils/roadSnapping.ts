@@ -205,16 +205,16 @@ export function prepareLocationsForSnapping(locksmiths: Locksmith[]): { id: stri
   const locationsToSnap: { id: string; latitude: number; longitude: number }[] = [];
 
   locksmiths.forEach(locksmith => {
-    const currentLocation = locksmith.locations.find(loc => loc.isCurrentLocation);
-
-    if (currentLocation) {
+    // Only attempt to snap if we are actually displaying the live location
+    if (locksmith.isDisplayingLive && typeof locksmith.latitude === 'number' && typeof locksmith.longitude === 'number') {
       locationsToSnap.push({
-        id: `${locksmith.id}-current`,
-        latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude,
+        id: `${locksmith.id}-current`, // Keep this ID convention for TradespersonMarker
+        latitude: locksmith.latitude,    // These are the (live) coordinates being displayed
+        longitude: locksmith.longitude,
       });
     }
   });
 
+  console.log('[prepareLocationsForSnapping] Locations prepared for snapping:', locationsToSnap);
   return locationsToSnap;
 }
