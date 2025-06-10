@@ -34,7 +34,7 @@ export async function snapToRoads(
       try {
         const response = await fetch(endpoint);
         if (!response.ok) {
-          const errorText = await response.text();
+          await response.text(); // Consume the response body
           snappedPoints[location.id] = { ...location, bearing: 0, error: `API request failed: ${response.status}` }; 
           continue;
         }

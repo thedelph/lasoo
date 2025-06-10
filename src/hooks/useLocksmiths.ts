@@ -99,10 +99,10 @@ async function geocodePostcode(postcode: string, mapboxToken: string): Promise<{
  * @returns Object containing the findNearby function and loading state
  */
 type ProcessedUser = UserRecord & { 
-  distance?: number; 
-  hqCoords?: { latitude: number; longitude: number }; 
+  distance?: number | null; 
+  hqCoords?: { latitude: number; longitude: number } | null; 
   location?: LocationRecord | null; 
-  displayDistance?: number;
+  displayDistance?: number | null;
 };
 
 export function useLocksmiths(passedMapboxToken?: string | null) {
@@ -131,7 +131,7 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
     longitude: number,
     radiusKm: number = 50,
     serviceType?: string,
-    locationMode: 'current' | 'hq' | 'either' = 'either'
+    _locationMode: 'current' | 'hq' | 'either' = 'either'
   ): Promise<Locksmith[]> => {
     setLoading(true);
     
@@ -336,7 +336,7 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
           ...result.user,
           distance: result.distance === null ? undefined : result.distance,
           hqCoords: result.hqCoords === null ? undefined : result.hqCoords,
-          displayDistance: result.displayDistance
+          displayDistance: result.displayDistance === null ? undefined : result.displayDistance
         }));
 
       // Step 6: Map to Locksmith type with multiple locations and time-based logic
