@@ -171,20 +171,32 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
         return [];
       }
 
-
-      // Step 2: Filter by service type if specified
-      // Special case: when service_type is 'home', include locksmith services
-      // This allows home users to find locksmiths
-      const filteredUsers = serviceType && serviceType !== 'any' 
-        ? users.filter(user => {
-            // If searching for 'home', include all locksmith services
-            if (serviceType.toLowerCase() === 'home') {
-              return user.service_type?.toLowerCase() === 'locksmith';
-            }
-            // Otherwise, match exactly
-            return user.service_type === serviceType;
-          })
-        : users;
+      // Step 2: Filter by service type using the services table
+      let filteredUsers = users;
+      
+      if (serviceType && serviceType !== 'any') {
+        // Query the services table to find which users offer the requested service
+        const servicesResult = await supabase
+          .from('services')
+          .select('user_id')
+          .eq('service_name', serviceType)
+          .eq('is_offered', true);
+        
+        if (servicesResult.error) {
+          throw servicesResult.error;
+        }
+        
+        if (servicesResult.data && servicesResult.data.length > 0) {
+          // Get the user IDs that offer this service
+          const userIdsWithService = servicesResult.data.map(s => s.user_id);
+          
+          // Filter users to only include those who offer the service
+          filteredUsers = users.filter(user => userIdsWithService.includes(user.id));
+        } else {
+          // No users offer this service
+          return [];
+        }
+      }
 
       
       if (filteredUsers.length === 0) {

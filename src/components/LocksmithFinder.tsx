@@ -11,8 +11,24 @@ import { useLocksmiths } from '../hooks/useLocksmiths'
 import type { Locksmith } from '../types/locksmith'
 
 const DEFAULT_ZOOM = 12
-// Padding in pixels around the bounds - more at the bottom to account for results panel
-const PADDING = { top: 50, bottom: 200, left: 50, right: 50 }
+
+// Dynamic padding calculation to account for results panel
+const calculatePadding = () => {
+  // Results pane is max 30vh + 48px (margins/padding)
+  // On mobile, we need more relative padding
+  const isMobile = window.innerWidth < 768;
+  const viewportHeight = window.innerHeight;
+  
+  return {
+    top: 50,
+    // Mobile: 40% of viewport (min 300px), Desktop: 35% of viewport (min 350px)
+    bottom: isMobile 
+      ? Math.max(viewportHeight * 0.4, 300) 
+      : Math.max(viewportHeight * 0.35, 350),
+    left: 50,
+    right: 50
+  };
+}
 
 const INITIAL_VIEW = {
   latitude: 54.093409,
@@ -56,10 +72,15 @@ export default function LocksmithFinder({
 
     if (locksmiths.length === 0) {
       // If no results, just center on search location with default zoom
+      // Use extra padding to ensure search pin is visible above "No results" message
+      const noPadding = calculatePadding();
+      noPadding.bottom = noPadding.bottom + 50; // Add extra space for no results message
+      
       mapRef.current.flyTo({
         center: [searchLoc.longitude, searchLoc.latitude],
         zoom: DEFAULT_ZOOM,
-        duration: 2000
+        duration: 2000,
+        padding: noPadding
       });
       return;
     }
@@ -80,13 +101,14 @@ export default function LocksmithFinder({
 
     // Fit map to bounds with padding
     mapRef.current.fitBounds(bounds, {
-      padding: PADDING,
+      padding: calculatePadding(),
       duration: 2000
     });
   };
 
-  const handleSearch = async (searchPostcode: string) => {
-    console.log('handleSearch called with:', searchPostcode, 'service:', service);
+  const handleSearch = async (searchPostcode: string, serviceType?: string) => {
+    const searchService = serviceType || service;
+    console.log('handleSearch called with:', searchPostcode, 'service:', searchService);
 
     if (!searchPostcode.trim() || !mapboxToken) {
       console.warn('handleSearch returning early. Postcode empty or token missing. Postcode:', searchPostcode.trim(), 'Token:', !!mapboxToken);
@@ -156,7 +178,7 @@ export default function LocksmithFinder({
       setSearchLocation(searchLoc);
 
       // Find nearby locksmiths with the 'either' mode to check both HQ and current locations
-      let locksmiths = await findNearby(latitude, longitude, 25, service, 'either' as 'current' | 'hq' | 'either');
+      let locksmiths = await findNearby(latitude, longitude, 25, searchService, 'either' as 'current' | 'hq' | 'either');
 
       // Sort locksmiths by distance before setting state
       locksmiths.sort((a, b) => a.distance - b.distance);
@@ -186,11 +208,11 @@ export default function LocksmithFinder({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent, serviceType?: string) => {
     e.preventDefault();
     if (postcode.trim()) {
       // Always trigger a search when the form is submitted
-      handleSearch(postcode.trim());
+      handleSearch(postcode.trim(), serviceType);
     }
   };
 
@@ -224,7 +246,7 @@ export default function LocksmithFinder({
         center: [locksmith.longitude, locksmith.latitude],
         zoom: 14,
         duration: 2000,
-        padding: { bottom: 200, top: 50, left: 50, right: 50 } // Add padding to keep marker visible
+        padding: calculatePadding() // Use dynamic padding
       });
     }
   };
@@ -235,7 +257,7 @@ export default function LocksmithFinder({
     // Restore previous bounds when going back to results
     if (mapRef.current && resultsBounds) {
       mapRef.current.fitBounds(resultsBounds, {
-        padding: PADDING,
+        padding: calculatePadding(),
         duration: 2000
       });
     }

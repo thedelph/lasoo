@@ -41,14 +41,21 @@ Fixed intermittent "No Locksmiths Found" error that occurred when users clicked 
 
 ### Key Tables:
 - `users` - Stores locksmith/tradesperson information
+  - `service_type` field contains "Locksmith" (capitalized) for all locksmiths
+  - `user_id` is the primary identifier used for relationships
 - `locations` - Stores real-time location data for locksmiths
+- `services` - Stores which services each locksmith offers
+  - `service_name` can be "home" or "vehicle"
+  - `is_offered` boolean indicates if the service is available
+  - `user_id` foreign key links to `users.id`
 - `user_metadata` - Stores additional user profile data (migrated from users.metadata column)
 - `profiles` - User profile data with RLS policies
 
 ### Important Notes:
 - Service radius is measured from HQ location (company_postcode), not current location
 - Locksmiths can be found by either live location or HQ location
-- The `service_type` field uses "locksmith" for home services
+- Service filtering uses the `services` table, not the `users.service_type` field
+- The `services` table determines which locksmiths appear for home vs vehicle searches
 
 ## Common Development Tasks
 
@@ -117,3 +124,50 @@ Removed all console.log debug statements from production code to improve perform
 - `src/components/results/ResultsPane.tsx` - Removed render state logging
 
 This cleanup improves performance by reducing console output and makes the code production-ready.
+
+### Home vs Vehicle Locksmith Services Implementation (June 2025)
+
+Implemented proper distinction between home and vehicle locksmith services using the `services` table:
+
+**Previous Issues:**
+- Vehicle locksmith button wasn't working because it searched for `service_type = 'vehicle'` but all users had `service_type = 'Locksmith'`
+- The search wasn't checking the `services` table which tracks what services each locksmith offers
+- Service type updates had a race condition causing the first click to use the old service type
+
+**Solutions Implemented:**
+1. **Database Updates:**
+   - Updated `services` table to use "vehicle" instead of "car" for consistency
+   - Added proper foreign key relationship between `services` and `users` tables (using `user_id`)
+   - Created migration to add `user_id` column and update RLS policies
+   - Added test data linking services to existing users
+
+2. **Search Logic Updates in `src/hooks/useLocksmiths.ts`:**
+   - Modified search to query the `services` table to find users offering the requested service
+   - Filters results to only show locksmiths who have `is_offered = true` for the selected service type
+   - Properly handles case where no locksmiths offer a specific service
+
+3. **UI State Management Fixes:**
+   - Fixed race condition by passing service type directly to search function
+   - Updated `handleSearch` to accept optional `serviceType` parameter
+   - Modified button clicks to pass service type immediately rather than relying on state
+
+4. **Map Centering Improvements:**
+   - Fixed issue where results pane was blocking the search location on the map
+   - Implemented dynamic padding calculation based on viewport size:
+     - Mobile: 40% of viewport height (min 300px) bottom padding
+     - Desktop: 35% of viewport height (min 350px) bottom padding
+   - Applied dynamic padding to all map movements (search, marker clicks, back navigation)
+   - Added extra padding for "no results" case to ensure search pin is visible
+
+**Key Files Modified:**
+- `src/hooks/useLocksmiths.ts` - Updated to check services table for filtering
+- `src/components/search/SearchForm.tsx` - Fixed service type passing on button clicks
+- `src/components/LocksmithFinder.tsx` - Fixed race condition and dynamic map padding
+- `src/components/map/NewMapView.tsx` - Changed from `initialViewState` to controlled viewport
+- Database migrations for services table relationship
+
+**Current Behavior:**
+- Home button shows locksmiths offering "home" services
+- Vehicle button shows locksmiths offering "vehicle" services
+- Some locksmiths offer both services and appear in both searches
+- Map properly centers above results pane on all screen sizes

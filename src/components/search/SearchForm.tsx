@@ -7,7 +7,7 @@ interface SearchFormProps {
   searching: boolean;
   onPostcodeChange: (value: string) => void;
   onServiceChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.FormEvent, serviceType?: string) => void;
 }
 
 export default function SearchForm({
@@ -81,7 +81,7 @@ export default function SearchForm({
                     disabled={searching}
                     onClick={(e) => {
                       onServiceChange('vehicle');
-                      onSubmit(e);
+                      onSubmit(e, 'vehicle');
                     }}
                   >
                     {searching && service === 'vehicle' ? (
@@ -102,7 +102,7 @@ export default function SearchForm({
                     disabled={searching}
                     onClick={(e) => {
                       onServiceChange('home');
-                      onSubmit(e);
+                      onSubmit(e, 'home');
                     }}
                   >
                     {searching && service === 'home' ? (

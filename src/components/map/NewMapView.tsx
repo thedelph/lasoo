@@ -159,11 +159,7 @@ export default function MapView({
         ref={mapRef}
         mapboxAccessToken={mapboxToken}
         mapStyle="mapbox://styles/mapbox/streets-v12"
-        initialViewState={{
-          latitude: viewport.latitude,
-          longitude: viewport.longitude,
-          zoom: viewport.zoom
-        }}
+        {...viewport}
         onMove={onMove}
         onError={handleMapError}
         onLoad={handleMapLoad}
