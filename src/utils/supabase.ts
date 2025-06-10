@@ -9,13 +9,22 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    autoRefreshToken: false,
-    persistSession: false,
+    autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: false
   },
   global: {
     headers: {
       'X-Client-Info': 'supabase-js/2.x'
+    }
+  },
+  db: {
+    schema: 'public'
+  },
+  // Add retry configuration
+  realtime: {
+    params: {
+      eventsPerSecond: 10
     }
   }
 });

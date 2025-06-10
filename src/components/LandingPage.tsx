@@ -17,11 +17,12 @@ export default function LandingPage() {
       // Navigate to the /find page. The LocksmithFinder component on that page
       // will use the 'postcode', 'serviceType', and 'autoSearch=true' URL parameters
       // to initialize its state and trigger an automatic search.
-      navigate(
-        `/find?postcode=${encodeURIComponent(
-          postcode.trim()
-        )}&serviceType=${serviceType}&autoSearch=true`
-      );
+      // Navigate with autoSearch=true to trigger automatic search on the find page
+      const url = `/find?postcode=${encodeURIComponent(
+        postcode.trim()
+      )}&serviceType=${serviceType}&autoSearch=true`;
+      console.log('Navigating to:', url);
+      navigate(url);
     }
   }
 

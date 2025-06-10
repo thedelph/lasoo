@@ -233,6 +233,43 @@ Environment variables are not properly set in the Vercel deployment.
 2. Check that the variable names match what your application expects
 3. Ensure that the environment variables are accessible during build time if needed
 
+## Locksmith Search Issues
+
+### Intermittent "No Locksmiths Found" Error
+
+**Error Description:**
+When clicking "View Home Locksmiths" button, the search occasionally returns "No Locksmiths Found" even when locksmiths exist in the area. Users may need to click the button multiple times before results appear.
+
+**Cause:**
+This was caused by a race condition where the results pane was rendering before the search completed, showing empty results prematurely.
+
+**Solution Applied:**
+1. **Fixed race condition in state management:**
+   - Moved `setHasSearched(true)` to only execute after search completes
+   - This prevents the ResultsPane from rendering with empty results while search is in progress
+
+2. **Added retry logic to database queries:**
+   - Both users and locations queries now retry up to 3 times with exponential backoff
+   - Helps handle transient database connection issues
+
+3. **Added retry logic to geocoding API calls:**
+   - Mapbox geocoding requests retry on server errors (5xx status codes)
+   - Uses same exponential backoff pattern (1s, 2s, 3s)
+
+4. **Fixed Supabase client configuration:**
+   - Enabled `autoRefreshToken` and `persistSession` for better connection stability
+   - Prevents authentication session timeouts
+
+5. **Made mapboxToken initialization synchronous:**
+   - Prevents race conditions during component initialization
+   - Ensures token is available immediately when needed
+
+**Code Changes:**
+- `src/hooks/useLocksmiths.ts`: Added retry logic to database queries and geocoding
+- `src/components/LocksmithFinder.tsx`: Fixed race condition in search state management
+- `src/utils/supabase.ts`: Enabled session persistence and auto-refresh
+- `src/hooks/useMapbox.ts`: Made token initialization synchronous
+
 ## Security Best Practices
 
 1. **Least Privilege:** Only grant the minimum permissions necessary in RLS policies

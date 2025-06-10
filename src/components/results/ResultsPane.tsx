@@ -21,7 +21,12 @@ export default function ResultsPane({
   onBack,
   onReset,
 }: ResultsPaneProps) {
-  if (!hasSearched) return null;
+  console.log('ResultsPane render:', { hasSearched, availableLocksmiths: availableLocksmiths.length });
+  
+  if (!hasSearched) {
+    console.log('ResultsPane not showing because hasSearched is false');
+    return null;
+  }
 
   return (
     <div className="fixed bottom-4 w-full px-4 max-w-lg mx-auto left-0 right-0 z-10">

@@ -90,26 +90,59 @@ export default function LocksmithFinder({
 
     if (!searchPostcode.trim() || !mapboxToken) {
       console.warn('handleSearch returning early. Postcode empty or token missing. Postcode:', searchPostcode.trim(), 'Token:', !!mapboxToken);
+      if (!searchPostcode.trim()) {
+        toast.error('Please enter a postcode');
+      }
+      if (!mapboxToken) {
+        toast.error('Map service not available');
+      }
       return;
     }
     
 
     setGeocoding(true);
-    setHasSearched(true);
+    // Don't set hasSearched to true yet - wait until search completes
     setSelectedLocksmith(null);
     setAvailableLocksmiths([]);
     setSearchLocation(null);
     
     try {
-      // Geocode postcode
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          searchPostcode
-        )}.json?country=GB&types=postcode&access_token=${mapboxToken}`
-      );
+      // Geocode postcode with retry logic
+      let response = null;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+              searchPostcode
+            )}.json?country=GB&types=postcode&access_token=${mapboxToken}`
+          );
+          
+          if (response.ok) {
+            break;
+          } else if (response.status >= 500 && retryCount < maxRetries - 1) {
+            // Server error, retry
+            retryCount++;
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+            continue;
+          } else {
+            throw new Error(`Geocoding failed: ${response.statusText}`);
+          }
+        } catch (error) {
+          retryCount++;
+          if (retryCount < maxRetries) {
+            console.log(`Geocoding attempt ${retryCount}/${maxRetries} failed, retrying...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          } else {
+            throw error;
+          }
+        }
+      }
 
-      if (!response.ok) {
-        throw new Error(`Geocoding failed: ${response.statusText}`);
+      if (!response || !response.ok) {
+        throw new Error('Geocoding failed after retries');
       }
 
       const data = await response.json();
@@ -129,17 +162,25 @@ export default function LocksmithFinder({
       locksmiths.sort((a, b) => a.distance - b.distance);
 
       setAvailableLocksmiths(locksmiths);
+      // Now that we have results (or confirmed no results), set hasSearched to true
+      setHasSearched(true);
+      console.log('Set availableLocksmiths:', locksmiths.length, 'locksmiths');
+      console.log('hasSearched:', true);
       
       // Fit map to include search location and any results
       fitMapToResults(searchLoc, locksmiths);
 
       if (locksmiths.length === 0) {
         toast.info('No locksmiths found in your area');
+      } else {
+        console.log(`Found ${locksmiths.length} locksmiths in your area`);
       }
     } catch (error) {
       console.error('Search error:', error);
       toast.error(error instanceof Error ? error.message : 'Search failed');
       setAvailableLocksmiths([]);
+      // Even on error, set hasSearched to true so we show "No results" instead of nothing
+      setHasSearched(true);
     } finally {
       setGeocoding(false);
     }
@@ -148,7 +189,7 @@ export default function LocksmithFinder({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (postcode.trim()) {
-      navigate(`/find?postcode=${encodeURIComponent(postcode.trim())}&serviceType=${service}`);
+      // Always trigger a search when the form is submitted
       handleSearch(postcode.trim());
     }
   };
@@ -212,13 +253,12 @@ export default function LocksmithFinder({
     // 3. The `mapboxToken` is loaded (required for geocoding in `handleSearch`).
     // 4. A search hasn't already been performed in this component instance (`!hasSearched`).
     if (shouldAutoSearchFromUrl && postcode && mapboxToken && !hasSearched) {
-      // Set `hasSearched` to true immediately to prevent this effect from re-triggering
-      // for the same auto-search navigation if dependencies change due to this state update.
-      setHasSearched(true);
-      // Directly call `handleSearch`. This was previously in a `setTimeout`,
-      // but direct invocation avoids issues where the timeout was cleared by effect cleanup
-      // before `handleSearch` could run.
-      handleSearch(postcode);
+      // Add a small delay to ensure all components are mounted and ready
+      const timer = setTimeout(() => {
+        handleSearch(postcode);
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
   }, [searchParams, postcode, service, hasSearched, mapboxToken]);
 

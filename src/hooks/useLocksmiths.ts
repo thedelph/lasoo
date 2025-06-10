@@ -56,22 +56,42 @@ interface LocationRecord {
 async function geocodePostcode(postcode: string, mapboxToken: string): Promise<{latitude: number, longitude: number} | null> {
   if (!postcode?.trim()) return null;
   
-  try {
-    const response = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(postcode)}.json?country=GB&types=postcode&access_token=${mapboxToken}`
-    );
-    
-    if (!response.ok) return null;
-    
-    const data = await response.json();
-    if (!data.features || data.features.length === 0) return null;
-    
-    const [longitude, latitude] = data.features[0].center;
-    return { latitude, longitude };
-  } catch (error) {
-    console.error('Geocoding error:', error);
-    return null;
+  const maxRetries = 3;
+  let retryCount = 0;
+  
+  while (retryCount < maxRetries) {
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(postcode)}.json?country=GB&types=postcode&access_token=${mapboxToken}`
+      );
+      
+      if (!response.ok) {
+        if (response.status >= 500 && retryCount < maxRetries - 1) {
+          // Server error, retry
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          continue;
+        }
+        return null;
+      }
+      
+      const data = await response.json();
+      if (!data.features || data.features.length === 0) return null;
+      
+      const [longitude, latitude] = data.features[0].center;
+      return { latitude, longitude };
+    } catch (error) {
+      console.error(`Geocoding error (attempt ${retryCount + 1}/${maxRetries}):`, error);
+      retryCount++;
+      if (retryCount < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+      } else {
+        return null;
+      }
+    }
   }
+  
+  return null;
 }
 
 /**
@@ -124,17 +144,34 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
         locationMode
       });
 
-      // Step 1: Query users table
-      const { data: users, error: usersError } = await supabase
-        .from('users')
-        .select(
-          'id, user_id, fullname, company_name, phone, email, company_postcode, service_type, service_radius'
-        )
-        .eq('is_authorized', 1)
-        .eq('is_activated', 1);
+      // Step 1: Query users table with retry logic
+      let users = null;
+      let usersError = null;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries && !users) {
+        const result = await supabase
+          .from('users')
+          .select(
+            'id, user_id, fullname, company_name, phone, email, company_postcode, service_type, service_radius'
+          )
+          .eq('is_authorized', 1)
+          .eq('is_activated', 1);
+        
+        users = result.data;
+        usersError = result.error;
+        
+        if (usersError) {
+          console.error(`Users query error (attempt ${retryCount + 1}/${maxRetries}):`, usersError);
+          retryCount++;
+          if (retryCount < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
+          }
+        }
+      }
 
       if (usersError) {
-        console.error('Users query error:', usersError);
         throw usersError;
       }
 
@@ -169,22 +206,42 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
       // Extract user_ids for the locations query
       const userIds = filteredUsers.map(user => user.user_id);
 
-      // Step 3: Query locations table
-      const { data: locations, error: locationsError } = await supabase
-        .from('locations')
-        .select('user_id, latitude, longitude, date_updated')
-        .in('user_id', userIds)
-        .not('latitude', 'is', null)
-        .not('longitude', 'is', null);
+      // Step 3: Query locations table with retry logic
+      let locations = null;
+      let locationsError = null;
+      retryCount = 0;
+      
+      while (retryCount < maxRetries && !locations) {
+        const result = await supabase
+          .from('locations')
+          .select('user_id, latitude, longitude, date_updated')
+          .in('user_id', userIds)
+          .not('latitude', 'is', null)
+          .not('longitude', 'is', null);
+        
+        locations = result.data;
+        locationsError = result.error;
+        
+        if (locationsError) {
+          console.error(`Locations query error (attempt ${retryCount + 1}/${maxRetries}):`, locationsError);
+          retryCount++;
+          if (retryCount < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
+          }
+        }
+      }
 
       if (locationsError) {
-        console.error('Locations query error:', locationsError);
         throw locationsError;
       }
 
-      if (!locations || locations.length === 0) {
-        console.log('No location data found for users');
-        return [];
+      if (!locations) {
+        console.log('Locations query returned null, using empty array');
+        locations = [];
+      }
+      
+      if (locations.length === 0) {
+        console.log('No location data found for users, but will continue to check HQ locations');
       }
 
       console.log(`Found ${locations.length} location entries`);
@@ -249,27 +306,8 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
           
           // If we don't have valid measurement coordinates, this locksmith can't be included
           if (measureLat === null || measureLng === null) {
-            // Use the user's actual service radius for display, falling back to radiusKm if needed
-            const serviceRadius = user.service_radius || radiusKm;
-            
-            let distance: number | null = null;
-            let inRange = false;
-            
-            // Calculate distance from search point to HQ location
-            const hqLocation = await geocodePostcode(user.company_postcode, mapboxToken);
-            const hqDistance = calculateDistance(
-              latitude,
-              longitude,
-              hqLocation?.latitude || 0,
-              hqLocation?.longitude || 0
-            );
-            
-            // IMPORTANT: For a locksmith to be included, their HQ must be within service radius
-            // This follows the principle that service radius is measured from HQ
-            inRange = hqDistance <= serviceRadius;
-            console.log(`${user.company_name}: Distance=${hqDistance.toFixed(2)}km from HQ location, Radius=${serviceRadius}km - ${inRange ? 'IN RANGE' : 'OUT OF RANGE'}`);
-            
-            return { user, inRange, distance, hqCoords: hqLocation };
+            console.log(`${user.company_name}: No valid coordinates found (no location data and no HQ geocoding)`);
+            return { user, inRange: false, distance: null, hqCoords: null };
           }
           
           // Calculate distance from search location to measurement point (HQ if available, otherwise current)
