@@ -207,7 +207,7 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
       const userIds = filteredUsers.map(user => user.user_id);
 
       // Step 3: Query locations table with retry logic
-      let locations = null;
+      let locations: LocationRecord[] | null = null;
       let locationsError = null;
       retryCount = 0;
       
