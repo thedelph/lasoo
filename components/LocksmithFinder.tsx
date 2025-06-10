@@ -33,15 +33,12 @@ export default function LocksmithFinder() {
   const handleSearch = async (searchPostcode: string) => {
     if (!searchPostcode.trim()) return;
 
-    console.log('Starting search for postcode:', searchPostcode);
     setHasSearched(true);
     setSelectedLocksmith(null);
     setAvailableLocksmiths([]);
     
     try {
-      console.log('Geocoding postcode...');
       const coords = await geocodePostcode(searchPostcode);
-      console.log('Coordinates received:', coords);
 
       const newViewport = {
         latitude: coords.latitude,
@@ -52,7 +49,6 @@ export default function LocksmithFinder() {
       setViewport(newViewport);
       
       if (mapRef.current) {
-        console.log('Updating map view...');
         mapRef.current.flyTo({
           center: [coords.longitude, coords.latitude],
           zoom: 12,
@@ -60,7 +56,6 @@ export default function LocksmithFinder() {
         });
       }
 
-      console.log('Finding nearby locksmiths...');
       const locksmiths = await findNearby(
         coords.latitude,
         coords.longitude,
@@ -68,14 +63,12 @@ export default function LocksmithFinder() {
         service
       );
       
-      console.log('Locksmiths found:', locksmiths.length);
       setAvailableLocksmiths(locksmiths);
       
       if (locksmiths.length === 0) {
         toast.info('No locksmiths found in your area');
       }
     } catch (error) {
-      console.error('Search error:', error);
       toast.error(error instanceof Error ? error.message : 'Search failed');
       setAvailableLocksmiths([]);
     }
@@ -124,7 +117,6 @@ export default function LocksmithFinder() {
   useEffect(() => {
     const initialPostcode = searchParams?.get('postcode');
     if (initialPostcode) {
-      console.log('Initial postcode found in URL:', initialPostcode);
       handleSearch(initialPostcode);
     }
   }, []);

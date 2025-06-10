@@ -81,7 +81,6 @@ async function geocodePostcode(postcode: string, mapboxToken: string): Promise<{
       const [longitude, latitude] = data.features[0].center;
       return { latitude, longitude };
     } catch (error) {
-      console.error(`Geocoding error (attempt ${retryCount + 1}/${maxRetries}):`, error);
       retryCount++;
       if (retryCount < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
@@ -103,6 +102,7 @@ type ProcessedUser = UserRecord & {
   distance?: number; 
   hqCoords?: { latitude: number; longitude: number }; 
   location?: LocationRecord | null; 
+  displayDistance?: number;
 };
 
 export function useLocksmiths(passedMapboxToken?: string | null) {
@@ -134,15 +134,8 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
     locationMode: 'current' | 'hq' | 'either' = 'either'
   ): Promise<Locksmith[]> => {
     setLoading(true);
-    console.group('🔍 Locksmith Search');
     
     try {
-      console.log('Search Parameters:', {
-        searchLocation: { latitude, longitude },
-        radiusKm,
-        serviceType: serviceType || 'any',
-        locationMode
-      });
 
       // Step 1: Query users table with retry logic
       let users = null;
@@ -163,7 +156,6 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
         usersError = result.error;
         
         if (usersError) {
-          console.error(`Users query error (attempt ${retryCount + 1}/${maxRetries}):`, usersError);
           retryCount++;
           if (retryCount < maxRetries) {
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
@@ -176,11 +168,9 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
       }
 
       if (!users || users.length === 0) {
-        console.log('No active users found');
         return [];
       }
 
-      console.log(`Found ${users.length} active users`);
 
       // Step 2: Filter by service type if specified
       // Special case: when service_type is 'home', include locksmith services
@@ -196,10 +186,8 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
           })
         : users;
 
-      console.log(`After service type filtering: ${filteredUsers.length} users`);
       
       if (filteredUsers.length === 0) {
-        console.log(`No users found with service type: ${serviceType}`);
         return [];
       }
 
@@ -223,7 +211,6 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
         locationsError = result.error;
         
         if (locationsError) {
-          console.error(`Locations query error (attempt ${retryCount + 1}/${maxRetries}):`, locationsError);
           retryCount++;
           if (retryCount < maxRetries) {
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
@@ -236,15 +223,12 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
       }
 
       if (!locations) {
-        console.log('Locations query returned null, using empty array');
         locations = [];
       }
       
       if (locations.length === 0) {
-        console.log('No location data found for users, but will continue to check HQ locations');
       }
 
-      console.log(`Found ${locations.length} location entries`);
 
       // Step 4: Join users and locations manually, but don't filter out users without locations
       // This allows finding locksmiths by their HQ location (company_postcode) even if they're not sharing live location
@@ -255,10 +239,7 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
         return { ...user, location: userLocation };
       });
 
-      console.log(`Found ${usersWithLocations.length} users with valid locations`);
 
-      // Log the search coordinates
-      console.log(`Search coordinates: ${latitude}, ${longitude}`);
       
       // We'll need to geocode HQ locations first to determine if they're in range
       const usersWithHQPromises = await Promise.all(
@@ -266,7 +247,6 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
           // If user has no location data but has a company_postcode, we can still show them
           // using just their HQ location
           if (!user.location && !user.company_postcode) {
-            console.log(`${user.company_name}: No location data and no company_postcode`);
             return { user, inRange: false, distance: null, hqCoords: null };
           }
           
@@ -291,7 +271,6 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
               const geocoded = await geocodePostcode(user.company_postcode, mapboxToken!); // mapboxToken should be ensured by calling context or default
               
               if (geocoded) {
-                console.log(`HQ location for ${user.company_name}: ${geocoded.latitude}, ${geocoded.longitude}`);
                 // Use HQ coordinates for distance measurement
                 // This overrides current location as the measurement point
                 // because we want to measure service radius from HQ
@@ -300,14 +279,12 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
                 hqCoords = geocoded;
               }
             } catch (error) {
-              console.error(`Failed to geocode HQ for ${user.company_name}:`, error);
             }
           }
           
           // If we don't have valid measurement coordinates, this locksmith can't be included
           if (measureLat === null || measureLng === null) {
-            console.log(`${user.company_name}: No valid coordinates found (no location data and no HQ geocoding)`);
-            return { user, inRange: false, distance: null, hqCoords: null };
+            return { user, inRange: false, distance: null, hqCoords: null, displayDistance: null };
           }
           
           // Calculate distance from search location to measurement point (HQ if available, otherwise current)
@@ -323,10 +300,32 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
           
           // Check if the search location is within the locksmith's service radius
           const inRange = distance <= serviceRadius;
-          console.log(`${user.company_name}: Using locksmith's defined service radius: ${serviceRadius}km`);
-          console.log(`${user.company_name}: Distance=${distance.toFixed(2)}km from ${hqCoords ? 'HQ' : 'current'} location, Radius=${serviceRadius}km - ${inRange ? 'IN RANGE' : 'OUT OF RANGE'}`);
           
-          return { user, inRange, distance, hqCoords };
+          // Calculate display distance (for sorting) - this should be from the actual location we'll show
+          let displayDistance = distance;
+          if (user.location && hqCoords) {
+            // If we have both live and HQ locations, calculate distance to live location for sorting
+            const currentLat = Number(user.location.latitude);
+            const currentLng = Number(user.location.longitude);
+            const liveDistance = calculateDistance(latitude, longitude, currentLat, currentLng);
+            
+            // We'll use live location for display if it's recent (within 15 minutes)
+            // This logic mirrors what happens in the locksmith mapping below
+            if (user.location.date_updated) {
+              try {
+                const locationDate = new Date(user.location.date_updated);
+                const now = new Date();
+                const ageInMinutes = (now.getTime() - locationDate.getTime()) / (1000 * 60);
+                if (ageInMinutes <= 15) {
+                  displayDistance = liveDistance;
+                }
+              } catch (e) {
+                // Keep HQ distance on error
+              }
+            }
+          }
+          
+          return { user, inRange, distance, hqCoords, displayDistance };
         })
       );
       
@@ -336,7 +335,8 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
         .map(result => ({
           ...result.user,
           distance: result.distance === null ? undefined : result.distance,
-          hqCoords: result.hqCoords === null ? undefined : result.hqCoords
+          hqCoords: result.hqCoords === null ? undefined : result.hqCoords,
+          displayDistance: result.displayDistance
         }));
 
       // Step 6: Map to Locksmith type with multiple locations and time-based logic
@@ -425,7 +425,6 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
               }
             }
           } catch (e) { // Error parsing live location timestamp
-            console.error(`Error parsing date_updated '${actualLiveLocationTimestamp}' for user ${user.user_id}:`, e);
             if (hqGeocoded) {
               displayLat = hqGeocoded.latitude;
               displayLng = hqGeocoded.longitude;
@@ -450,7 +449,6 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
           displayLng = 0;
           statusText = 'Location Unavailable';
           isCurrentlyDisplayingLive = false;
-          console.warn(`User ${user.user_id} (${user.company_name}) has no live record and no HQ location.`);
         }
       } // End of if (liveLocationRecord && liveLocationRecord.latitude && liveLocationRecord.longitude) else block
 
@@ -469,10 +467,10 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
           
           locations: uniqueLocations, // All available locations (current + HQ) with timestamps if applicable
           
-          distance: user.distance || 0,
+          distance: user.displayDistance || user.distance || 0,
           hqPostcode: user.company_postcode,
           serviceRadius: user.service_radius || radiusKm, // Use actual service radius
-          eta: Math.round((user.distance || 0) * 2 + 10),
+          eta: Math.round((user.displayDistance || user.distance || 0) * 2 + 10),
 
           // New fields from locksmith.ts type update
           liveLatitude: actualLiveLatitude,
@@ -486,14 +484,14 @@ export function useLocksmiths(passedMapboxToken?: string | null) {
       // Wait for all promises to resolve
       const locksmiths = await Promise.all(locksmithPromises);
       
-      console.log(`Returning ${locksmiths.length} locksmiths`);
+      // Sort by distance (closest first)
+      locksmiths.sort((a, b) => a.distance - b.distance);
+      
       return locksmiths;
 
     } catch (error) {
-      console.error('Search error:', error);
       throw error;
     } finally {
-      console.groupEnd();
       setLoading(false);
     }
   };

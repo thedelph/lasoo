@@ -3,7 +3,8 @@
     "allow": [
       "mcp__supabase__list_projects",
       "mcp__supabase__execute_sql",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm run typecheck:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

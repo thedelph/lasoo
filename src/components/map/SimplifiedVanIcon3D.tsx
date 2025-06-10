@@ -95,8 +95,6 @@ const VanIcon3D: React.FC<VanIcon3DProps> = ({
   // Join all transforms with spaces
   const transformValue = transforms.join(' ');
   
-  // Debug to see what transform is being applied
-  console.log(`Van bearing=${bearingValue}, normalized=${normalizedBearing}, flip=${isWesternDirection}, rotation=${rotationDegrees}°, transform="${transformValue}"`);
 
   
   return (

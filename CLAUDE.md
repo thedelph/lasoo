@@ -32,7 +32,7 @@ Fixed intermittent "No Locksmiths Found" error that occurred when users clicked 
 - Improved error handling throughout the search flow
 
 **Key Files Modified:**
-- `src/hooks/useLocksmiths.ts` - Added retry logic to database queries and geocoding
+- `src/hooks/useLocksmiths.ts` - Added retry logic to database queries and geocoding, fixed TypeScript type annotations
 - `src/components/LocksmithFinder.tsx` - Fixed race condition in state management
 - `src/utils/supabase.ts` - Enabled session persistence
 - `src/hooks/useMapbox.ts` - Made token initialization synchronous
@@ -78,3 +78,42 @@ npm run dev  # Runs on http://localhost:3001
 - Multiple re-renders occur due to map updates (normal behavior)
 - Road snapping for van icons can cause additional API calls
 - Some users may not have live location data and will only show HQ location
+
+### TypeScript Build Fixes (January 2025)
+- Fixed implicit 'any[]' type error in `useLocksmiths.ts` by adding explicit type annotation `LocationRecord[] | null` to the `locations` variable (line 210)
+
+### Search Results Sorting Fix (June 2025)
+
+Fixed issue where search results weren't prioritizing the closest locksmiths. The problem was that results were sorted by distance to HQ location even when locksmiths had live locations that were closer to the user.
+
+**Issue Details:**
+- When searching for "M50 1ZD", "Testing - Anthony Maddocks" (who was geographically closer) wasn't showing as the top result
+- "Locky McLockface" (who was further away) was appearing first
+- The sorting was using distance to HQ location rather than the actual displayed location
+
+**Solution Implemented:**
+- Added separate `displayDistance` calculation that uses:
+  - Live location distance if the locksmith has a recent live location (within 15 minutes)
+  - HQ location distance otherwise
+- Modified the sorting logic to use `displayDistance` instead of the service radius distance
+- Service radius checking still uses HQ location (as designed), but display ordering now reflects actual proximity
+
+**Key Changes in `src/hooks/useLocksmiths.ts`:**
+- Added `displayDistance` field to track distance to the actual displayed location
+- Calculate both service radius distance (from HQ) and display distance (from live/HQ as shown)
+- Sort results by `displayDistance` to show closest locksmiths first
+- Updated the `ProcessedUser` type to include `displayDistance`
+
+This ensures users see the closest available locksmiths first, whether they're showing live or HQ locations.
+
+### Code Cleanup (June 2025)
+
+Removed all console.log debug statements from production code to improve performance and clean up the codebase:
+
+**Files cleaned:**
+- `src/hooks/useLocksmiths.ts` - Removed 25 console.log statements used for debugging search flow
+- `src/components/map/SimplifiedVanIcon3D.tsx` - Removed debug log for van bearing calculations
+- `src/components/map/TradespersonMarker.tsx` - Removed detailed van data debug logging
+- `src/components/results/ResultsPane.tsx` - Removed render state logging
+
+This cleanup improves performance by reducing console output and makes the code production-ready.

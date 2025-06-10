@@ -40,24 +40,6 @@ const TradespersonMarker: React.FC<TradespersonMarkerProps> = ({
       bearing = (baseBearing + (idHash % 360)) % 360;
     }
 
-    // Debug log for van data
-    const vanMarkerLatitude = snappedPoint?.latitude || locksmith.latitude;
-    const vanMarkerLongitude = snappedPoint?.longitude || locksmith.longitude;
-    let finalVanBearing = bearing;
-    if (snappedPoint && typeof snappedPoint.bearing === 'number') {
-      finalVanBearing = snappedPoint.bearing;
-    }
-    console.log(`[TradespersonMarker] Van data for ${locksmith.companyName} (${locksmith.id}):`, {
-      originalLat: locksmith.latitude, // This is the live location
-      originalLng: locksmith.longitude,
-      snappedPointDetails: snappedPoint,
-      bearingCalculatedInTradespersonMarker: bearing,
-      finalVanLat: vanMarkerLatitude,
-      finalVanLng: vanMarkerLongitude,
-      finalVanBearing: finalVanBearing,
-      isUsingSnappedBearing: snappedPoint && typeof snappedPoint.bearing === 'number',
-      isUsingSnappedLocation: snappedPoint && typeof snappedPoint.latitude === 'number' && typeof snappedPoint.longitude === 'number',
-    });
   }
   
   // Visibility checks (keys might need to align with NewMapView's logic if it changes)
